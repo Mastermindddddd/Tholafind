@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  border-color: theme('colors.line');
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #EDEAD9;
+  color: #182420;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid #B14328;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.paper-texture {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+.stitch-border {
+  background-image: repeating-linear-gradient(90deg, #B8863B 0 6px, transparent 6px 12px);
+  height: 1px;
+}
+
+.masonry {
+  column-count: 1;
+  column-gap: 1.25rem;
+}
+@media (min-width: 640px) {
+  .masonry { column-count: 2; }
+}
+@media (min-width: 900px) {
+  .masonry { column-count: 3; }
+}
+@media (min-width: 1280px) {
+  .masonry { column-count: 4; }
+}
+.masonry > * {
+  break-inside: avoid;
+  margin-bottom: 1.25rem;
+}
