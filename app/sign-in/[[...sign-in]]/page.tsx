@@ -13,6 +13,7 @@ export default function SignInPage() {
           </h1>
         </div>
         <SignIn
+          forceRedirectUrl="/onboarding"
           appearance={{
             elements: {
               card: 'shadow-card border border-line',

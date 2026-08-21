@@ -13,6 +13,7 @@ export default function SignUpPage() {
           </h1>
         </div>
         <SignUp
+          forceRedirectUrl="/onboarding"
           appearance={{
             elements: {
               card: 'shadow-card border border-line',

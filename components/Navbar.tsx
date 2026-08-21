@@ -45,7 +45,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           <SignedOut>
-            <SignInButton mode="modal">
+            <SignInButton mode="modal" forceRedirectUrl="/onboarding">
               <button className="rounded-full border border-line px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-inkSoft transition-colors hover:border-pine hover:text-ink">
                 Sign in
               </button>
