@@ -64,7 +64,7 @@ export default function HomePage() {
             </h1>
             <p className="mx-auto mt-5 max-w-md text-[1.02rem] leading-relaxed text-paper/75 lg:mx-0">
               Tholafind turns a photo into a search across retail, resale, and vintage sources at once
-              &mdash; and calls in real people when the algorithm runs out of ideas.
+               and calls in real people when the algorithm runs out of ideas.
             </p>
           </div>
 
