@@ -1,11 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import ResultCard from '@/components/ResultCard';
-import { mockResults } from '@/lib/mockData';
-import { SourceKind } from '@/lib/types';
+import { FindResult, SourceKind } from '@/lib/types';
 import { Users, SlidersHorizontal } from 'lucide-react';
 
 type FilterKey = 'all' | SourceKind;
@@ -17,29 +14,51 @@ const filters: { key: FilterKey; label: string }[] = [
   { key: 'vintage', label: 'Vintage' },
 ];
 
-export default function ResultsPage() {
+interface ResultsViewProps {
+  reference: string;
+  photoUrl: string;
+  status: string;
+  results: FindResult[];
+}
+
+export default function ResultsView({ reference, photoUrl, status, results }: ResultsViewProps) {
   const [active, setActive] = useState<FilterKey>('all');
 
   const filtered = useMemo(() => {
-    if (active === 'all') return mockResults;
-    return mockResults.filter((r) => r.sourceKind === active);
-  }, [active]);
+    if (active === 'all') return results;
+    return results.filter((r) => r.sourceKind === active);
+  }, [active, results]);
 
-  const guessCount = mockResults.filter((r) => r.confidence === 'guess').length;
+  const guessCount = results.filter((r) => r.confidence === 'guess').length;
+  const sourceCount = new Set(results.map((r) => r.source)).size;
 
   return (
-    <div className="min-h-screen bg-paper paper-texture">
-      <Navbar />
-
+    <>
       <section className="mx-auto max-w-7xl px-5 pt-10 sm:px-8">
-        <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">Hunt log &middot; #TF-2291</p>
-        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-          12 leads found across 9 sources
-        </h1>
-        <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
-          Sorted by how closely each result matches your photo. Save anything worth tracking, and
-          escalate the uncertain ones to the community below.
-        </p>
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md border border-line shadow-card sm:h-28 sm:w-28">
+            {/* Using a plain img tag: this is a user- or demo-supplied external URL
+                (Vercel Blob or an Unsplash demo image), not a locally optimizable asset. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photoUrl} alt="Your uploaded photo" className="h-full w-full object-cover" />
+          </div>
+          <div>
+            <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">
+              Hunt log &middot; #{reference}
+            </p>
+            <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+              {results.length > 0
+                ? `${results.length} leads found across ${sourceCount} sources`
+                : status === 'pending' || status === 'searching'
+                  ? 'Searching now\u2026'
+                  : 'No leads found yet'}
+            </h1>
+            <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
+              Sorted by how closely each result matches your photo. Save anything worth tracking, and
+              escalate the uncertain ones to the community below.
+            </p>
+          </div>
+        </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-2">
           <SlidersHorizontal size={14} className="mr-1 text-inkSoft" />
@@ -90,8 +109,6 @@ export default function ResultsPage() {
           ))}
         </div>
       </section>
-
-      <Footer />
-    </div>
+    </>
   );
 }
