@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Compass } from 'lucide-react';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 
 const links = [
   { href: '/', label: 'Search' },
@@ -42,12 +43,35 @@ export default function Navbar() {
           })}
         </nav>
 
-        <Link
-          href="/"
-          className="rounded-full bg-pine px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-paper transition-colors hover:bg-pineDeep"
-        >
-          Start a hunt
-        </Link>
+        <div className="flex items-center gap-3">
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="rounded-full border border-line px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-inkSoft transition-colors hover:border-pine hover:text-ink">
+                Sign in
+              </button>
+            </SignInButton>
+            <Link
+              href="/"
+              className="rounded-full bg-pine px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-paper transition-colors hover:bg-pineDeep"
+            >
+              Start a hunt
+            </Link>
+          </SignedOut>
+          <SignedIn>
+            <Link
+              href="/"
+              className="rounded-full bg-pine px-4 py-2 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-paper transition-colors hover:bg-pineDeep"
+            >
+              Start a hunt
+            </Link>
+            <UserButton
+              appearance={{
+                elements: { avatarBox: 'h-8 w-8' },
+                variables: { colorPrimary: '#1F3B33' },
+              }}
+            />
+          </SignedIn>
+        </div>
       </div>
     </header>
   );

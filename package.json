@@ -6,24 +6,31 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:verify": "tsx scripts/verify-db.ts"
   },
   "dependencies": {
-    "dotenv": "^17.4.2",
+    "@clerk/nextjs": "^6.39.6",
     "framer-motion": "^11.3.19",
     "lucide-react": "^0.383.0",
     "mongoose": "^9.9.3",
     "next": "14.2.35",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "server-only": "^0.0.1",
+    "svix": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.13",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.19",
+    "dotenv": "^17.4.2",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.7",
+    "tsx": "^4.23.12",
     "typescript": "^5.5.4"
   }
 }
