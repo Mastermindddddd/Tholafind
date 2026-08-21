@@ -5,9 +5,11 @@ import { usePathname } from 'next/navigation';
 import { Compass } from 'lucide-react';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 
+// "Latest hunt" is removed until Phase 5 gives us a real per-user search
+// history to point it at — a static /results link isn't meaningful anymore
+// now that every hunt has its own /results/[searchId] page.
 const links = [
   { href: '/', label: 'Search' },
-  { href: '/results', label: 'Latest hunt' },
   { href: '/collections', label: 'Collections' },
 ];
 

@@ -2,35 +2,103 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, Upload, ScanLine } from 'lucide-react';
+import { Camera, Upload, ScanLine, AlertCircle } from 'lucide-react';
 
-type Phase = 'idle' | 'preview' | 'scanning';
+type Phase = 'idle' | 'scanning' | 'error';
+
+const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8MB — kept in sync with app/api/upload/route.ts
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+const MIN_SCAN_MS = 1100; // keeps the scan animation from flashing on fast responses
+
+async function withMinimumDelay<T>(promise: Promise<T>, ms: number): Promise<T> {
+  const [result] = await Promise.all([promise, new Promise((r) => setTimeout(r, ms))]);
+  return result;
+}
 
 export default function UploadDropzone() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const handleFile = useCallback((file: File | undefined) => {
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    setPhase('scanning');
-    window.setTimeout(() => {
-      router.push('/results');
-    }, 1600);
-  }, [router]);
+  const reset = useCallback(() => {
+    setPhase('idle');
+    setErrorMessage(null);
+    setPreviewUrl(null);
+  }, []);
 
-  const handleDemo = useCallback(() => {
-    setPreviewUrl(
-      'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&q=80'
-    );
+  const handleFile = useCallback(
+    async (file: File | undefined) => {
+      if (!file) return;
+
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        setErrorMessage('That file type isn\u2019t supported \u2014 try a JPEG, PNG, WEBP, or HEIC photo.');
+        setPhase('error');
+        return;
+      }
+      if (file.size > MAX_FILE_BYTES) {
+        setErrorMessage('That photo is too large \u2014 try one under 8MB.');
+        setPhase('error');
+        return;
+      }
+
+      setPreviewUrl(URL.createObjectURL(file));
+      setPhase('scanning');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await withMinimumDelay(
+          fetch('/api/upload', { method: 'POST', body: formData }),
+          MIN_SCAN_MS
+        );
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data.message || 'Upload failed.');
+        }
+
+        router.push(`/results/${data.searchId}`);
+      } catch (err) {
+        setErrorMessage(
+          err instanceof Error ? err.message : 'That upload didn\u2019t go through \u2014 try again.'
+        );
+        setPhase('error');
+      }
+    },
+    [router]
+  );
+
+  const handleDemo = useCallback(async () => {
+    const demoImageUrl = 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&q=80';
+    setPreviewUrl(demoImageUrl);
     setPhase('scanning');
-    window.setTimeout(() => {
-      router.push('/results');
-    }, 1600);
+
+    try {
+      const res = await withMinimumDelay(
+        fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ demoImageUrl }),
+        }),
+        MIN_SCAN_MS
+      );
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.message || 'Could not start the sample hunt.');
+      }
+
+      router.push(`/results/${data.searchId}`);
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : 'Could not start the sample hunt \u2014 try again.'
+      );
+      setPhase('error');
+    }
   }, [router]);
 
   return (
@@ -79,7 +147,7 @@ export default function UploadDropzone() {
             <input
               ref={inputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
               className="hidden"
               onChange={(e) => handleFile(e.target.files?.[0])}
             />
@@ -95,6 +163,22 @@ export default function UploadDropzone() {
             <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-ink/70 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-paper">
               <ScanLine size={11} className="animate-pulse" /> Logging specimen&hellip;
             </div>
+          </div>
+        )}
+
+        {phase === 'error' && (
+          <div className="py-2">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brick/10 text-brick">
+              <AlertCircle size={20} />
+            </div>
+            <p className="font-display text-lg font-semibold text-ink">That didn&rsquo;t go through</p>
+            <p className="mx-auto mt-1.5 max-w-[30ch] text-[0.85rem] text-inkSoft">{errorMessage}</p>
+            <button
+              onClick={reset}
+              className="mt-5 rounded-full bg-pine px-5 py-2.5 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-paper transition-colors hover:bg-pineDeep"
+            >
+              Try again
+            </button>
           </div>
         )}
       </div>
