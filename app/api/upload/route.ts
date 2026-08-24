@@ -4,22 +4,44 @@ import { connectToDatabase } from '@/lib/db';
 import { Search } from '@/lib/models';
 import { generateUniqueReference } from '@/lib/generateReference';
 import { getOrCreateUser } from '@/lib/getOrCreateUser';
+import { runSearch } from '@/lib/search/runSearch';
 
 export const dynamic = 'force-dynamic';
+// The default serverless timeout is too short for a full multi-source
+// search (one embedding call + up to three provider calls). 60s is the
+// Hobby-tier ceiling on Vercel; bump this if you're on Pro and still see
+// timeouts under load. See README (Phase 3) for the background-job
+// alternative if this becomes a real bottleneck.
+export const maxDuration = 60;
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
+/**
+ * runSearch already marks the Search document as 'failed' on a total
+ * failure (see runSearch.ts) — this wrapper just ensures an unexpected
+ * throw from it (e.g. a DB hiccup mid-search) doesn't take down the whole
+ * upload response. The person still gets their searchId and can see
+ * whatever partial state the results page renders for it.
+ */
+async function runSearchSafely(searchId: string) {
+  try {
+    await runSearch(searchId);
+  } catch (err) {
+    console.error(`[upload] runSearch failed for ${searchId}:`, err);
+  }
+}
+
 export async function POST(request: Request) {
-  await connectToDatabase();
-
-  // Anonymous search is allowed by design (Phase 1) — a null user is fine here,
-  // Search.userId is optional.
-  const user = await getOrCreateUser();
-
   const contentType = request.headers.get('content-type') || '';
 
   try {
+    await connectToDatabase();
+
+    // Anonymous search is allowed by design (Phase 1) — a null user is fine here,
+    // Search.userId is optional.
+    const user = await getOrCreateUser();
+
     // Path 1: the "try a sample hunt" demo — reuses an existing hosted image
     // instead of re-uploading it to Blob storage.
     if (contentType.includes('application/json')) {
@@ -40,6 +62,8 @@ export async function POST(request: Request) {
         status: 'pending',
         reference,
       });
+
+      await runSearchSafely(String(search._id));
 
       return NextResponse.json({ ok: true, searchId: search._id, reference: search.reference });
     }
@@ -96,12 +120,15 @@ export async function POST(request: Request) {
       reference,
     });
 
+    await runSearchSafely(String(search._id));
+
     return NextResponse.json({ ok: true, searchId: search._id, reference: search.reference });
   } catch (err) {
     console.error('[upload] failed:', err);
-    return NextResponse.json(
-      { ok: false, message: 'Upload failed. Try again in a moment.' },
-      { status: 500 }
-    );
+    const message =
+      err instanceof Error && /querySrv|ETIMEOUT|ENOTFOUND|ECONNREFUSED/.test(err.message)
+        ? 'Could not reach the database. Check MONGODB_URI and your network connection.'
+        : 'Upload failed. Try again in a moment.';
+    return NextResponse.json({ ok: false, message }, { status: 500 });
   }
 }

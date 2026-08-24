@@ -51,11 +51,14 @@ export default function ResultsView({ reference, photoUrl, status, results }: Re
                 ? `${results.length} leads found across ${sourceCount} sources`
                 : status === 'pending' || status === 'searching'
                   ? 'Searching now\u2026'
-                  : 'No leads found yet'}
+                  : 'No leads found this time'}
             </h1>
             <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
-              Sorted by how closely each result matches your photo. Save anything worth tracking, and
-              escalate the uncertain ones to the community below.
+              {results.length > 0
+                ? 'Sorted by how closely each result matches your photo. Save anything worth tracking, and escalate the uncertain ones to the community below.'
+                : status === 'pending' || status === 'searching'
+                  ? 'Sorted by how closely each result matches your photo, as soon as they come in.'
+                  : 'None of the connected sources turned up a match \u2014 try a clearer photo, or hand this one to the community.'}
             </p>
           </div>
         </div>
