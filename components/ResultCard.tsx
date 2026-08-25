@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { Heart, ExternalLink } from 'lucide-react';
 import { FindResult } from '@/lib/types';
 import StampBadge from './StampBadge';
@@ -19,12 +18,15 @@ export default function ResultCard({ item }: { item: FindResult }) {
     <article className="group relative animate-riseIn overflow-hidden rounded-[6px] border border-line/70 bg-card shadow-card transition-shadow duration-300 hover:shadow-cardHover">
       <div className="stitch-border opacity-70" />
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: `1 / ${item.aspect}` }}>
-        <Image
+        {/* Plain img, not next/image: result thumbnails come from whichever
+            retailer/eBay/Etsy/Google-thumbnail domain each search result
+            happens to be hosted on — an unbounded, unpredictable set that
+            can't be pre-allowlisted via next.config.mjs remotePatterns. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={item.image}
           alt={item.title}
-          fill
-          sizes="(max-width: 640px) 90vw, (max-width: 1280px) 33vw, 22vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
         />
         <div className="absolute left-2.5 top-2.5">
           <StampBadge confidence={item.confidence} />
