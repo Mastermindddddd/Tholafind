@@ -20,6 +20,7 @@ export default function UploadDropzone() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [hint, setHint] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -49,6 +50,7 @@ export default function UploadDropzone() {
 
       const formData = new FormData();
       formData.append('file', file);
+      if (hint.trim()) formData.append('hint', hint.trim());
 
       try {
         const res = await withMinimumDelay(
@@ -69,7 +71,7 @@ export default function UploadDropzone() {
         setPhase('error');
       }
     },
-    [router]
+    [hint, router]
   );
 
   const handleDemo = useCallback(async () => {
@@ -131,12 +133,30 @@ export default function UploadDropzone() {
             </p>
 
             <div className="mt-5 flex flex-col items-center gap-2.5">
+              <div className="w-full text-left">
+                <label
+                  htmlFor="upload-hint"
+                  className="font-mono text-[0.62rem] uppercase tracking-[0.08em] text-inkSoft"
+                >
+                  Know a detail? (optional)
+                </label>
+                <input
+                  id="upload-hint"
+                  type="text"
+                  value={hint}
+                  onChange={(e) => setHint(e.target.value.slice(0, 280))}
+                  placeholder="Color, material, a brand guess&hellip;"
+                  className="mt-1.5 w-full rounded-sm border border-line bg-paper px-3 py-2 text-[0.85rem] text-ink placeholder:text-inkSoft/70 focus:border-pine"
+                />
+              </div>
+
               <button
                 onClick={() => inputRef.current?.click()}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-pine px-5 py-2.5 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-paper transition-colors hover:bg-pineDeep"
+                className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-pine px-5 py-2.5 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-paper transition-colors hover:bg-pineDeep"
               >
                 <Upload size={14} /> Choose a photo
               </button>
+
               <button
                 onClick={handleDemo}
                 className="font-mono text-[0.68rem] uppercase tracking-[0.1em] text-inkSoft underline decoration-dotted underline-offset-4 hover:text-brick"

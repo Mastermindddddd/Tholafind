@@ -78,3 +78,35 @@ function extractEmbedding(output: unknown): number[] {
   }
   throw new Error('Unexpected embedding output shape from Replicate — see embeddings.ts.');
 }
+
+/**
+ * Embeds every photo attached to a search (1–3, per Search.images) and
+ * averages them into a single vector, L2-renormalized. This is Phase 4's
+ * "weight the match across all of them" — a front shot plus a tag
+ * close-up, say, contribute to one combined query vector rather than only
+ * ever using the first photo.
+ *
+ * Runs one Replicate call per image, in parallel (capped at 3 by the
+ * Search schema already, so this never fans out further than that).
+ */
+export async function generateCombinedEmbedding(imageUrls: string[]): Promise<number[]> {
+  if (imageUrls.length === 0) {
+    throw new Error('generateCombinedEmbedding called with no images.');
+  }
+
+  const embeddings = await Promise.all(imageUrls.map((url) => generateEmbedding(url)));
+
+  if (embeddings.length === 1) {
+    return embeddings[0];
+  }
+
+  const length = embeddings[0].length;
+  const sum = new Array(length).fill(0);
+  for (const vec of embeddings) {
+    for (let i = 0; i < length; i++) sum[i] += vec[i];
+  }
+  const mean = sum.map((v) => v / embeddings.length);
+
+  const norm = Math.sqrt(mean.reduce((acc, v) => acc + v * v, 0));
+  return norm === 0 ? mean : mean.map((v) => v / norm);
+}

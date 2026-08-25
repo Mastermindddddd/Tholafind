@@ -55,9 +55,11 @@ export default async function ResultsPage({ params }: PageProps) {
     <div className="min-h-screen bg-paper paper-texture">
       <Navbar />
       <ResultsView
+        searchId={String(search._id)}
         reference={search.reference}
-        photoUrl={search.images[0]}
+        photoUrls={search.images}
         status={search.status}
+        imageCount={search.images.length}
         results={results}
       />
       <Footer />

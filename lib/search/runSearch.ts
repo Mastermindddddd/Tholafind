@@ -4,7 +4,7 @@ import { Search, SearchResult } from '@/lib/models';
 import { RawCandidate } from './types';
 import { confidenceForCandidate, scoreForRank } from './confidence';
 import { deriveSearchQuery } from './deriveSearchQuery';
-import { generateEmbedding } from './embeddings';
+import { generateCombinedEmbedding } from './embeddings';
 import { searchGoogleLens } from './providers/serpapiLens';
 import { searchEbay } from './providers/ebay';
 import { searchEtsy } from './providers/etsy';
@@ -33,6 +33,13 @@ function toResultDoc(searchId: unknown, candidate: RawCandidate, rank: number) {
  * Never throws for individual provider failures — a search with 2 of 3
  * providers working still returns useful results. It only throws if the
  * Search document itself can't be found or saved.
+ *
+ * Idempotent by design: any existing SearchResult documents for this
+ * search are cleared before writing fresh ones. This makes it safe to call
+ * again on the same search after Phase 4's refine flow adds a photo or a
+ * hint — the person sees one clean, complete result set reflecting
+ * everything currently attached to the hunt, not old low-confidence
+ * guesses sitting alongside new better matches.
  */
 export async function runSearch(searchId: string): Promise<void> {
   await connectToDatabase();
@@ -44,22 +51,23 @@ export async function runSearch(searchId: string): Promise<void> {
 
   search.status = 'searching';
   await search.save();
+  await SearchResult.deleteMany({ searchId: search._id });
 
-  const imageUrl = search.images[0];
+  const imageUrls = search.images;
 
   // Query embedding: stored for future use (see cosineSimilarity.ts) —
   // failure here is non-fatal, the rest of the search continues without it.
+  // Averaged across every attached photo when there's more than one.
   try {
-    const embedding = await generateEmbedding(imageUrl);
-    search.embedding = embedding;
+    search.embedding = await generateCombinedEmbedding(imageUrls);
   } catch (err) {
     console.error(`[runSearch] embedding failed for ${searchId} (non-fatal):`, err);
   }
 
-  // Retail / visual search.
+  // Retail / visual search — across every attached photo, merged.
   let lensResults: RawCandidate[] = [];
   try {
-    lensResults = await searchGoogleLens(imageUrl);
+    lensResults = await searchGoogleLens(imageUrls);
   } catch (err) {
     console.error(`[runSearch] SerpApi Lens failed for ${searchId}:`, err);
   }

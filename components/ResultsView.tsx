@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import ResultCard from '@/components/ResultCard';
+import RefineSearchPanel from '@/components/RefineSearchPanel';
 import { FindResult, SourceKind } from '@/lib/types';
 import { Users, SlidersHorizontal } from 'lucide-react';
 
@@ -15,13 +16,22 @@ const filters: { key: FilterKey; label: string }[] = [
 ];
 
 interface ResultsViewProps {
+  searchId: string;
   reference: string;
-  photoUrl: string;
+  photoUrls: string[];
   status: string;
+  imageCount: number;
   results: FindResult[];
 }
 
-export default function ResultsView({ reference, photoUrl, status, results }: ResultsViewProps) {
+export default function ResultsView({
+  searchId,
+  reference,
+  photoUrls,
+  status,
+  imageCount,
+  results,
+}: ResultsViewProps) {
   const [active, setActive] = useState<FilterKey>('all');
 
   const filtered = useMemo(() => {
@@ -32,15 +42,34 @@ export default function ResultsView({ reference, photoUrl, status, results }: Re
   const guessCount = results.filter((r) => r.confidence === 'guess').length;
   const sourceCount = new Set(results.map((r) => r.source)).size;
 
+  // A weak-or-failed search gets the more targeted, higher-leverage prompt
+  // (improve the input — add an angle or a hint) rather than the crowd-assist
+  // banner below, which is for the milder case: a mostly-good search with a
+  // few uncertain items mixed in.
+  const needsRefine = status === 'low_confidence' || status === 'failed';
+
   return (
     <>
       <section className="mx-auto max-w-7xl px-5 pt-10 sm:px-8">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md border border-line shadow-card sm:h-28 sm:w-28">
-            {/* Using a plain img tag: this is a user- or demo-supplied external URL
-                (Vercel Blob or an Unsplash demo image), not a locally optimizable asset. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photoUrl} alt="Your uploaded photo" className="h-full w-full object-cover" />
+          <div className="flex shrink-0 gap-2">
+            {photoUrls.map((url, i) => (
+              <div
+                key={url}
+                className={`relative overflow-hidden rounded-md border border-line shadow-card ${
+                  i === 0 ? 'h-24 w-24 sm:h-28 sm:w-28' : 'h-24 w-16 sm:h-28 sm:w-20'
+                }`}
+              >
+                {/* Plain img tag: these are user- or demo-supplied external URLs
+                    (Vercel Blob or an Unsplash demo image), not locally optimizable assets. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt={i === 0 ? 'Your uploaded photo' : `Additional angle ${i + 1}`}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ))}
           </div>
           <div>
             <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">
@@ -81,7 +110,17 @@ export default function ResultsView({ reference, photoUrl, status, results }: Re
         </div>
       </section>
 
-      {guessCount > 0 && (
+      {needsRefine && (
+        <section className="mx-auto mt-8 max-w-7xl px-5 sm:px-8">
+          <RefineSearchPanel
+            searchId={searchId}
+            imageCount={imageCount}
+            variant={status === 'failed' ? 'failed' : 'low_confidence'}
+          />
+        </section>
+      )}
+
+      {!needsRefine && guessCount > 0 && (
         <section className="mx-auto mt-8 max-w-7xl px-5 sm:px-8">
           <div className="flex flex-col items-start gap-4 rounded-md border border-dashed border-brass bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">

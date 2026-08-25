@@ -78,6 +78,11 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get('file');
+    const hintRaw = formData.get('hint');
+    const hint =
+      typeof hintRaw === 'string' && hintRaw.trim().length > 0
+        ? hintRaw.trim().slice(0, 280)
+        : undefined;
 
     if (!(file instanceof File)) {
       return NextResponse.json({ ok: false, message: 'No file provided.' }, { status: 400 });
@@ -116,6 +121,7 @@ export async function POST(request: Request) {
     const search = await Search.create({
       userId: user?._id,
       images: [blob.url],
+      hint,
       status: 'pending',
       reference,
     });
