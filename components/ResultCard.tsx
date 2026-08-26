@@ -15,7 +15,12 @@ export default function ResultCard({ item }: { item: FindResult }) {
   const [saved, setSaved] = useState(false);
 
   return (
-    <article className="group relative animate-riseIn overflow-hidden rounded-[6px] border border-line/70 bg-card shadow-card transition-shadow duration-300 hover:shadow-cardHover">
+    <a
+      href={item.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative block animate-riseIn overflow-hidden rounded-[6px] border border-line/70 bg-card shadow-card transition-shadow duration-300 hover:shadow-cardHover"
+    >
       <div className="stitch-border opacity-70" />
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: `1 / ${item.aspect}` }}>
         {/* Plain img, not next/image: result thumbnails come from whichever
@@ -32,7 +37,13 @@ export default function ResultCard({ item }: { item: FindResult }) {
           <StampBadge confidence={item.confidence} />
         </div>
         <button
-          onClick={() => setSaved((s) => !s)}
+          onClick={(e) => {
+            // Without this, clicking the heart would also trigger the
+            // parent <a>'s navigation to the external listing.
+            e.preventDefault();
+            e.stopPropagation();
+            setSaved((s) => !s);
+          }}
           aria-pressed={saved}
           aria-label={saved ? 'Remove from collection' : 'Save to collection'}
           className={`absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-colors ${
@@ -60,6 +71,6 @@ export default function ResultCard({ item }: { item: FindResult }) {
           </span>
         </div>
       </div>
-    </article>
+    </a>
   );
 }

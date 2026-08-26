@@ -10,6 +10,7 @@ export interface FindResult {
   price: string;
   confidence: Confidence;
   image: string;
+  url: string;
   aspect: number; // height / width, for masonry variety
 }
 

@@ -38,6 +38,7 @@ export default async function ResultsPage({ params }: PageProps) {
       price: doc.price || 'Price unavailable',
       confidence: doc.confidence,
       image: doc.image,
+      url: doc.url,
       // Real provider responses don't consistently include image dimensions
       // (SerpApi sometimes does, eBay/Etsy don't in the fields we request),
       // so every real result renders at a uniform 1:1 aspect for now — the
