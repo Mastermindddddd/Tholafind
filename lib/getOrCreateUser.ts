@@ -1,7 +1,7 @@
 import 'server-only';
 import { currentUser } from '@clerk/nextjs/server';
 import { connectToDatabase } from './db';
-import { User, type UserDoc } from './models';
+import { User, Collection, type UserDoc } from './models';
 import type { Types } from 'mongoose';
 
 export type AppUser = UserDoc & { _id: Types.ObjectId };
@@ -42,6 +42,15 @@ export async function getOrCreateUser(): Promise<AppUser | null> {
     authId: clerkUser.id,
     email,
     name,
+  });
+
+  // Every account gets one default collection to save finds into — created
+  // here rather than lazily on first heart-click, so there's never a race
+  // between "user exists" and "their default collection exists".
+  await Collection.create({
+    userId: created._id,
+    name: 'Saved finds',
+    isDefault: true,
   });
 
   return created as AppUser;

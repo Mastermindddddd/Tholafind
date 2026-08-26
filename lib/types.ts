@@ -12,12 +12,5 @@ export interface FindResult {
   image: string;
   url: string;
   aspect: number; // height / width, for masonry variety
-}
-
-export interface Collection {
-  id: string;
-  name: string;
-  itemCount: number;
-  cover: string;
-  updated: string;
+  saved: boolean;
 }

@@ -1,56 +1,111 @@
-import Image from 'next/image';
+import { redirect } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { mockCollections } from '@/lib/mockData';
-import { FolderPlus, Bell } from 'lucide-react';
+import HuntCard, { type HuntCardData } from '@/components/HuntCard';
+import CollectionCard, { type CollectionCardData } from '@/components/CollectionCard';
+import NewCollectionButton from '@/components/NewCollectionButton';
+import { getOrCreateUser, needsOnboarding } from '@/lib/getOrCreateUser';
+import { Search, SearchResult, Collection, CollectionItem } from '@/lib/models';
+import { Bell } from 'lucide-react';
 
-export default function CollectionsPage() {
+const RECENT_HUNTS_LIMIT = 8;
+
+export default async function CollectionsPage() {
+  const user = await getOrCreateUser();
+
+  // Middleware already requires sign-in for this route; this redirect only
+  // covers the edge case of the Clerk session existing but the sync failing.
+  if (!user) redirect('/sign-in');
+  if (needsOnboarding(user)) redirect('/onboarding');
+
+  // "Your hunts" — every search this account has ever run. This needed no
+  // new modeling: Search documents already carry userId from Phase 2, so
+  // "nothing gets lost" is just a matter of querying them, not a separate
+  // auto-save mechanism.
+  const recentSearches = await Search.find({ userId: user._id })
+    .sort({ createdAt: -1 })
+    .limit(RECENT_HUNTS_LIMIT)
+    .lean();
+
+  const hunts: HuntCardData[] = await Promise.all(
+    recentSearches.map(async (s) => ({
+      searchId: String(s._id),
+      reference: s.reference,
+      photo: s.images[0],
+      status: s.status,
+      resultCount: await SearchResult.countDocuments({ searchId: s._id }),
+      updatedAt: s.updatedAt,
+    }))
+  );
+
+  // "Saved finds" — curated folders of individually hearted results
+  // (ResultCard's save button), distinct from the hunt history above.
+  const rawCollections = await Collection.find({ userId: user._id })
+    .sort({ isDefault: -1, createdAt: 1 })
+    .lean();
+
+  const collections: CollectionCardData[] = await Promise.all(
+    rawCollections.map(async (c) => {
+      const itemCount = await CollectionItem.countDocuments({ collectionId: c._id });
+      const firstItem = await CollectionItem.findOne({ collectionId: c._id }).sort({ createdAt: -1 });
+      const cover = firstItem
+        ? (await SearchResult.findById(firstItem.searchResultId).select('image').lean())?.image ?? null
+        : null;
+
+      return {
+        id: String(c._id),
+        name: c.name,
+        isDefault: c.isDefault,
+        itemCount,
+        cover,
+      };
+    })
+  );
+
   return (
     <div className="min-h-screen bg-paper paper-texture">
       <Navbar />
 
       <section className="mx-auto max-w-7xl px-5 pt-10 sm:px-8">
-        <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">Your hunts</p>
-        <div className="mt-2 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
-          <h1 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-            Nothing here gets lost.
-          </h1>
-          <button className="flex items-center gap-2 rounded-full border border-line bg-card px-4 py-2 font-mono text-[0.68rem] uppercase tracking-[0.1em] text-inkSoft transition-colors hover:border-pine hover:text-ink">
-            <FolderPlus size={14} /> New collection
-          </button>
-        </div>
+        <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">
+          {user.name ? `${user.name}\u2019s hunts` : 'Your hunts'}
+        </p>
+        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+          Nothing here gets lost.
+        </h1>
         <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
-          Every search you start is saved automatically. Group them, walk away for a month, and pick
-          up exactly where the hunt left off.
+          Every search you start is saved automatically. Anything you save from a results page
+          lands in a collection below &mdash; walk away for a month, and pick up exactly where you
+          left off.
         </p>
       </section>
 
+      {/* Your hunts — real search history, no manual saving required. */}
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {mockCollections.map((c) => (
-            <a
-              key={c.id}
-              href="/results"
-              className="group overflow-hidden rounded-md border border-line bg-card shadow-card transition-shadow hover:shadow-cardHover"
-            >
-              <div className="relative aspect-[4/3] w-full overflow-hidden">
-                <Image
-                  src={c.cover}
-                  alt={c.name}
-                  fill
-                  sizes="(max-width: 640px) 90vw, 25vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent" />
-                <span className="absolute bottom-3 left-3 rounded-full bg-ink/60 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.08em] text-paper backdrop-blur">
-                  {c.itemCount} items
-                </span>
-              </div>
-              <div className="p-4">
-                <p className="font-display text-[1.02rem] font-semibold text-ink">{c.name}</p>
-                <p className="mt-1 text-[0.75rem] text-inkSoft">Updated {c.updated}</p>
-              </div>
-            </a>
+        <h2 className="font-display text-xl font-semibold text-ink">Recent hunts</h2>
+        {hunts.length === 0 ? (
+          <p className="mt-3 text-[0.88rem] text-inkSoft">
+            No hunts yet &mdash; head to the home page and drop in a photo to start your first one.
+          </p>
+        ) : (
+          <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {hunts.map((h) => (
+              <HuntCard key={h.searchId} hunt={h} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Saved finds — curated folders of individually hearted results. */}
+      <section className="mx-auto max-w-7xl px-5 pb-12 sm:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display text-xl font-semibold text-ink">Saved finds</h2>
+          <NewCollectionButton />
+        </div>
+
+        <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {collections.map((c) => (
+            <CollectionCard key={c.id} collection={c} />
           ))}
         </div>
 
@@ -59,8 +114,8 @@ export default function CollectionsPage() {
             <Bell size={14} />
           </span>
           <p className="text-[0.85rem] text-inkSoft">
-            Turn on alerts for any collection and Tholafind will tell you when a saved hunt gets a new
-            listing or a price drop &mdash; no need to keep checking back yourself.
+            Turn on alerts for any collection and Tholafind will tell you when a saved find gets a
+            price drop &mdash; no need to keep checking back yourself.
           </p>
         </div>
       </section>

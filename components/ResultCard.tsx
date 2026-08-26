@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import { Heart, ExternalLink } from 'lucide-react';
 import { FindResult } from '@/lib/types';
 import StampBadge from './StampBadge';
@@ -12,7 +14,46 @@ const sourceLabel: Record<FindResult['sourceKind'], string> = {
 };
 
 export default function ResultCard({ item }: { item: FindResult }) {
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(item.saved);
+  const [pending, setPending] = useState(false);
+  const { isSignedIn } = useUser();
+  const router = useRouter();
+
+  const toggleSave = async (e: React.MouseEvent) => {
+    // Without this, clicking the heart would also trigger the parent <a>'s
+    // navigation to the external listing.
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isSignedIn) {
+      // Saving is an account feature (that's the whole point of Phase 5 —
+      // finds need to persist to a real account, not local browser state).
+      // Sending someone to sign in via a heart-click is a jarring
+      // interruption, so this redirects back to onboarding same as every
+      // other auth entry point, rather than silently no-op'ing the click.
+      router.push('/sign-in');
+      return;
+    }
+
+    if (pending) return;
+
+    const next = !saved;
+    setSaved(next); // optimistic
+    setPending(true);
+
+    try {
+      const res = await fetch('/api/collections/items', {
+        method: next ? 'POST' : 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ searchResultId: item.id }),
+      });
+      if (!res.ok) throw new Error('Save failed');
+    } catch {
+      setSaved(!next); // roll back the optimistic update
+    } finally {
+      setPending(false);
+    }
+  };
 
   return (
     <a
@@ -37,16 +78,10 @@ export default function ResultCard({ item }: { item: FindResult }) {
           <StampBadge confidence={item.confidence} />
         </div>
         <button
-          onClick={(e) => {
-            // Without this, clicking the heart would also trigger the
-            // parent <a>'s navigation to the external listing.
-            e.preventDefault();
-            e.stopPropagation();
-            setSaved((s) => !s);
-          }}
+          onClick={toggleSave}
           aria-pressed={saved}
           aria-label={saved ? 'Remove from collection' : 'Save to collection'}
-          className={`absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-colors ${
+          className={`absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-colors disabled:opacity-70 ${
             saved ? 'bg-brick text-paper' : 'bg-ink/40 text-paper hover:bg-ink/60'
           }`}
         >

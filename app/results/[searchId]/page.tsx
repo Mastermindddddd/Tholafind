@@ -4,7 +4,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ResultsView from '@/components/ResultsView';
 import { connectToDatabase } from '@/lib/db';
-import { Search, SearchResult } from '@/lib/models';
+import { Search, SearchResult, Collection, CollectionItem } from '@/lib/models';
+import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import { Confidence, FindResult } from '@/lib/types';
 
 interface PageProps {
@@ -29,6 +30,21 @@ export default async function ResultsPage({ params }: PageProps) {
 
   const resultDocs = await SearchResult.find({ searchId: search._id }).lean();
 
+  // Anonymous visitors never have saved items — skip the lookup entirely
+  // rather than querying with an empty collection list.
+  const user = await getOrCreateUser();
+  let savedResultIds = new Set<string>();
+  if (user && resultDocs.length > 0) {
+    const userCollectionIds = (await Collection.find({ userId: user._id }).select('_id')).map(
+      (c) => c._id
+    );
+    const savedItems = await CollectionItem.find({
+      collectionId: { $in: userCollectionIds },
+      searchResultId: { $in: resultDocs.map((d) => d._id) },
+    }).select('searchResultId');
+    savedResultIds = new Set(savedItems.map((item) => String(item.searchResultId)));
+  }
+
   const results: FindResult[] = resultDocs
     .map((doc) => ({
       id: String(doc._id),
@@ -46,6 +62,7 @@ export default async function ResultsPage({ params }: PageProps) {
       // from anything real. Worth revisiting if a source's true dimensions
       // become available.
       aspect: 1,
+      saved: savedResultIds.has(String(doc._id)),
     }))
     .sort(
       (a, b) =>
