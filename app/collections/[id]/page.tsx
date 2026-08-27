@@ -9,6 +9,10 @@ import { getOrCreateUser, needsOnboarding } from '@/lib/getOrCreateUser';
 import { Collection, CollectionItem, SearchResult } from '@/lib/models';
 import { FindResult } from '@/lib/types';
 
+// Explicit rather than relying on getOrCreateUser's implicit dynamic
+// trigger — same reasoning as the results page.
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: { id: string };
 }

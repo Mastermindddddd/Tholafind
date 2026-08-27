@@ -11,6 +11,7 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 const links = [
   { href: '/', label: 'Search' },
   { href: '/collections', label: 'Collections' },
+  { href: '/community', label: 'Community' },
 ];
 
 export default function Navbar() {

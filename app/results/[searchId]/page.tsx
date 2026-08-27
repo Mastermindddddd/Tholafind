@@ -4,9 +4,14 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ResultsView from '@/components/ResultsView';
 import { connectToDatabase } from '@/lib/db';
-import { Search, SearchResult, Collection, CollectionItem } from '@/lib/models';
+import { Search, SearchResult, Collection, CollectionItem, CommunityRequest } from '@/lib/models';
 import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import { Confidence, FindResult } from '@/lib/types';
+
+// Explicit rather than relying on getOrCreateUser's implicit dynamic
+// trigger via Clerk's currentUser() — this page must never be statically
+// cached regardless of which code path ends up calling it.
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: { searchId: string };
@@ -29,6 +34,10 @@ export default async function ResultsPage({ params }: PageProps) {
   }
 
   const resultDocs = await SearchResult.find({ searchId: search._id }).lean();
+
+  const existingCommunityRequest = await CommunityRequest.findOne({ searchId: search._id })
+    .select('_id')
+    .lean();
 
   // Anonymous visitors never have saved items — skip the lookup entirely
   // rather than querying with an empty collection list.
@@ -79,6 +88,7 @@ export default async function ResultsPage({ params }: PageProps) {
         status={search.status}
         imageCount={search.images.length}
         results={results}
+        communityRequestId={existingCommunityRequest ? String(existingCommunityRequest._id) : null}
       />
       <Footer />
     </div>

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import ResultCard from '@/components/ResultCard';
 import RefineSearchPanel from '@/components/RefineSearchPanel';
+import AskFindersButton from '@/components/AskFindersButton';
 import { FindResult, SourceKind } from '@/lib/types';
 import { Users, SlidersHorizontal } from 'lucide-react';
 
@@ -22,6 +23,7 @@ interface ResultsViewProps {
   status: string;
   imageCount: number;
   results: FindResult[];
+  communityRequestId: string | null;
 }
 
 export default function ResultsView({
@@ -31,6 +33,7 @@ export default function ResultsView({
   status,
   imageCount,
   results,
+  communityRequestId,
 }: ResultsViewProps) {
   const [active, setActive] = useState<FilterKey>('all');
 
@@ -117,6 +120,10 @@ export default function ResultsView({
             imageCount={imageCount}
             variant={status === 'failed' ? 'failed' : 'low_confidence'}
           />
+          <div className="mt-3 flex items-center justify-end gap-2.5">
+            <p className="text-[0.78rem] text-inkSoft">Or skip straight to a second opinion:</p>
+            <AskFindersButton searchId={searchId} existingRequestId={communityRequestId} />
+          </div>
         </section>
       )}
 
@@ -137,9 +144,7 @@ export default function ResultsView({
                 </p>
               </div>
             </div>
-            <button className="shrink-0 rounded-full bg-brick px-5 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-paper transition-colors hover:bg-brick/85">
-              Ask the finders
-            </button>
+            <AskFindersButton searchId={searchId} existingRequestId={communityRequestId} />
           </div>
         </section>
       )}

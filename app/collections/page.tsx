@@ -8,6 +8,10 @@ import { getOrCreateUser, needsOnboarding } from '@/lib/getOrCreateUser';
 import { Search, SearchResult, Collection, CollectionItem } from '@/lib/models';
 import { Bell } from 'lucide-react';
 
+// Explicit rather than relying on getOrCreateUser's implicit dynamic
+// trigger — same reasoning as the results page.
+export const dynamic = 'force-dynamic';
+
 const RECENT_HUNTS_LIMIT = 8;
 
 export default async function CollectionsPage() {

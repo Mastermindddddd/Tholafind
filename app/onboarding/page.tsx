@@ -2,6 +2,10 @@ import { redirect } from 'next/navigation';
 import { getOrCreateUser, needsOnboarding } from '@/lib/getOrCreateUser';
 import OnboardingForm from './OnboardingForm';
 
+// Explicit rather than relying on getOrCreateUser's implicit dynamic
+// trigger — same reasoning as the results page.
+export const dynamic = 'force-dynamic';
+
 export default async function OnboardingPage() {
   const user = await getOrCreateUser();
 
