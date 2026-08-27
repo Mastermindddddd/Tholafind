@@ -14,6 +14,33 @@ async function resolveTargetCollection(userId: Types.ObjectId, collectionId: unk
   return getOrCreateDefaultCollection(userId);
 }
 
+/** Which of the signed-in user's collections currently contain this item. */
+export async function GET(request: Request) {
+  const user = await getOrCreateUser();
+  if (!user) {
+    return NextResponse.json({ ok: false, message: 'Sign in to view saved finds.' }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const searchResultId = searchParams.get('searchResultId');
+  if (!searchResultId || !Types.ObjectId.isValid(searchResultId)) {
+    return NextResponse.json({ ok: false, message: 'Missing or invalid searchResultId.' }, { status: 400 });
+  }
+
+  const userCollectionIds = (await Collection.find({ userId: user._id }).select('_id')).map(
+    (c) => c._id
+  );
+  const items = await CollectionItem.find({
+    collectionId: { $in: userCollectionIds },
+    searchResultId,
+  }).select('collectionId');
+
+  return NextResponse.json({
+    ok: true,
+    collectionIds: items.map((i) => String(i.collectionId)),
+  });
+}
+
 /** Save a result. Idempotent — saving something already saved is a no-op success. */
 export async function POST(request: Request) {
   const user = await getOrCreateUser();
