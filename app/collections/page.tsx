@@ -5,7 +5,8 @@ import HuntCard, { type HuntCardData } from '@/components/HuntCard';
 import CollectionCard, { type CollectionCardData } from '@/components/CollectionCard';
 import NewCollectionButton from '@/components/NewCollectionButton';
 import { getOrCreateUser, needsOnboarding } from '@/lib/getOrCreateUser';
-import { Search, SearchResult, Collection, CollectionItem } from '@/lib/models';
+import { Search, SearchResult, Collection, CollectionItem, Alert } from '@/lib/models';
+import type { AlertNotificationData } from '@/components/AlertToggle';
 import { Bell } from 'lucide-react';
 
 // Explicit rather than relying on getOrCreateUser's implicit dynamic
@@ -31,15 +32,35 @@ export default async function CollectionsPage() {
     .limit(RECENT_HUNTS_LIMIT)
     .lean();
 
+  const alerts = await Alert.find({
+    userId: user._id,
+    searchId: { $in: recentSearches.map((s) => s._id) },
+  }).lean();
+  const alertBySearchId = new Map(alerts.map((a) => [String(a.searchId), a]));
+
   const hunts: HuntCardData[] = await Promise.all(
-    recentSearches.map(async (s) => ({
-      searchId: String(s._id),
-      reference: s.reference,
-      photo: s.images[0],
-      status: s.status,
-      resultCount: await SearchResult.countDocuments({ searchId: s._id }),
-      updatedAt: s.updatedAt,
-    }))
+    recentSearches.map(async (s) => {
+      const alert = alertBySearchId.get(String(s._id));
+      const unreadNotifications = alert
+        ? alert.notifications.filter((n) => n.createdAt > alert.seenAt)
+        : [];
+      const recentNotifications: AlertNotificationData[] = (alert?.notifications ?? [])
+        .slice(-5)
+        .reverse()
+        .map((n) => ({ message: n.message, createdAt: n.createdAt.toISOString() }));
+
+      return {
+        searchId: String(s._id),
+        reference: s.reference,
+        photo: s.images[0],
+        status: s.status,
+        resultCount: await SearchResult.countDocuments({ searchId: s._id }),
+        updatedAt: s.updatedAt,
+        isWatched: alert?.active ?? false,
+        unreadCount: unreadNotifications.length,
+        recentNotifications,
+      };
+    })
   );
 
   // "Saved finds" — curated folders of individually hearted results
@@ -92,11 +113,22 @@ export default async function CollectionsPage() {
             No hunts yet &mdash; head to the home page and drop in a photo to start your first one.
           </p>
         ) : (
-          <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {hunts.map((h) => (
-              <HuntCard key={h.searchId} hunt={h} />
-            ))}
-          </div>
+          <>
+            <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {hunts.map((h) => (
+                <HuntCard key={h.searchId} hunt={h} />
+              ))}
+            </div>
+            <div className="mt-6 flex items-start gap-3 rounded-md border border-dashed border-line bg-paperDim/50 p-5">
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pine text-brassLight">
+                <Bell size={14} />
+              </span>
+              <p className="text-[0.85rem] text-inkSoft">
+                Tap the bell on any hunt above to watch it &mdash; Tholafind checks daily for new
+                listings or a price drop, so you don&rsquo;t have to keep coming back to look.
+              </p>
+            </div>
+          </>
         )}
       </section>
 
@@ -111,16 +143,6 @@ export default async function CollectionsPage() {
           {collections.map((c) => (
             <CollectionCard key={c.id} collection={c} />
           ))}
-        </div>
-
-        <div className="mt-10 flex items-start gap-3 rounded-md border border-dashed border-line bg-paperDim/50 p-5">
-          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pine text-brassLight">
-            <Bell size={14} />
-          </span>
-          <p className="text-[0.85rem] text-inkSoft">
-            Turn on alerts for any collection and Tholafind will tell you when a saved find gets a
-            price drop &mdash; no need to keep checking back yourself.
-          </p>
         </div>
       </section>
 

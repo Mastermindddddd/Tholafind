@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { formatRelativeTime } from '@/lib/formatRelativeTime';
+import AlertToggle, { type AlertNotificationData } from '@/components/AlertToggle';
 
 export interface HuntCardData {
   searchId: string;
@@ -8,6 +9,9 @@ export interface HuntCardData {
   status: string;
   resultCount: number;
   updatedAt: Date;
+  isWatched: boolean;
+  unreadCount: number;
+  recentNotifications: AlertNotificationData[];
 }
 
 const statusLabel: Record<string, string> = {
@@ -35,6 +39,14 @@ export default function HuntCard({ hunt }: { hunt: HuntCardData }) {
         <span className="absolute bottom-3 left-3 rounded-full bg-ink/60 px-2.5 py-1 font-mono text-[0.62rem] uppercase tracking-[0.08em] text-paper backdrop-blur">
           {hunt.resultCount} {hunt.resultCount === 1 ? 'lead' : 'leads'}
         </span>
+        <div className="absolute right-3 top-3">
+          <AlertToggle
+            searchId={hunt.searchId}
+            initialWatched={hunt.isWatched}
+            initialUnreadCount={hunt.unreadCount}
+            recentNotifications={hunt.recentNotifications}
+          />
+        </div>
       </div>
       <div className="p-4">
         <p className="font-display text-[1.02rem] font-semibold text-ink">#{hunt.reference}</p>
