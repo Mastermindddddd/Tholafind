@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Compass } from 'lucide-react';
+import { Compass, CreditCard } from 'lucide-react';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 
 // "Latest hunt" is removed until Phase 5 gives us a real per-user search
@@ -72,7 +72,11 @@ export default function Navbar() {
                 elements: { avatarBox: 'h-8 w-8' },
                 variables: { colorPrimary: '#1F3B33' },
               }}
-            />
+            >
+              <UserButton.MenuItems>
+                <UserButton.Link label="Account & billing" labelIcon={<CreditCard size={14} />} href="/account" />
+              </UserButton.MenuItems>
+            </UserButton>
           </SignedIn>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import UploadDropzone from '@/components/UploadDropzone';
+import UpgradeButton from '@/components/UpgradeButton';
 import { Users, Layers, ImageOff, FolderOpen, ShieldCheck } from 'lucide-react';
 
 const steps = [
@@ -40,7 +41,7 @@ const features = [
   {
     icon: FolderOpen,
     title: 'Hunts you can leave and return to',
-    body: 'Every search is saved automatically. Come back in a month and pick up exactly where you left off \u2014 nothing lost, nothing re-typed.',
+    body: 'Every search is saved automatically, and you can watch any hunt for updates \u2014 we\u2019ll check daily and tell you about a new listing or a price drop. Come back in a month and pick up exactly where you left off.',
   },
 ];
 
@@ -64,7 +65,7 @@ export default function HomePage() {
             </h1>
             <p className="mx-auto mt-5 max-w-md text-[1.02rem] leading-relaxed text-paper/75 lg:mx-0">
               Tholafind turns a photo into a search across retail, resale, and vintage sources at once
-               and calls in real people when the algorithm runs out of ideas.
+              &mdash; and calls in real people when the algorithm runs out of ideas.
             </p>
           </div>
 
@@ -126,8 +127,9 @@ export default function HomePage() {
             </h2>
             <p className="mt-3 max-w-lg text-[0.92rem] leading-relaxed text-inkSoft">
               Every hunt starts free, and free means a real search across retail, resale, and vintage
-              &mdash; not a locked screen after your first upload. Tholafind Plus is there when you want
-              unlimited saved hunts, price-drop alerts, and priority on community requests.
+              &mdash; not a locked screen after your first upload. Search itself is unlimited on every
+              plan. Plus removes the two limits that exist on Free: how many collections you can
+              keep, and how many times a month you can ask the community for help.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -137,7 +139,7 @@ export default function HomePage() {
               <ul className="mt-4 space-y-2 text-[0.82rem] text-inkSoft">
                 <li>Unlimited photo searches</li>
                 <li>Retail, resale &amp; vintage results</li>
-                <li>3 saved hunts at a time</li>
+                <li>3 collections</li>
                 <li>2 community requests / month</li>
               </ul>
             </div>
@@ -145,11 +147,12 @@ export default function HomePage() {
               <p className="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-brick">Plus</p>
               <p className="mt-2 font-display text-2xl font-semibold text-ink">$5<span className="text-sm font-normal text-inkSoft">/mo</span></p>
               <ul className="mt-4 space-y-2 text-[0.82rem] text-inkSoft">
-                <li>Unlimited saved hunts</li>
-                <li>Price-drop &amp; new-listing alerts</li>
+                <li>Unlimited collections</li>
                 <li>Unlimited community requests</li>
-                <li>Priority AI re-scans</li>
               </ul>
+              <div className="mt-4">
+                <UpgradeButton label="Get Plus" />
+              </div>
             </div>
           </div>
         </div>

@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FolderPlus, X } from 'lucide-react';
+import UpgradeButton from './UpgradeButton';
 
 export default function NewCollectionButton() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [limitReached, setLimitReached] = useState(false);
   const router = useRouter();
 
   const submit = async () => {
@@ -19,6 +21,7 @@ export default function NewCollectionButton() {
     }
     setSubmitting(true);
     setError(null);
+    setLimitReached(false);
     try {
       const res = await fetch('/api/collections', {
         method: 'POST',
@@ -26,7 +29,10 @@ export default function NewCollectionButton() {
         body: JSON.stringify({ name: trimmed }),
       });
       const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.message || 'Could not create collection.');
+      if (!res.ok || !data.ok) {
+        if (data.limitReached) setLimitReached(true);
+        throw new Error(data.message || 'Could not create collection.');
+      }
       setOpen(false);
       setName('');
       router.refresh();
@@ -77,6 +83,11 @@ export default function NewCollectionButton() {
         <X size={16} />
       </button>
       {error && <p className="ml-1 text-[0.78rem] text-brick">{error}</p>}
+      {limitReached && (
+        <div className="ml-1">
+          <UpgradeButton />
+        </div>
+      )}
     </div>
   );
 }

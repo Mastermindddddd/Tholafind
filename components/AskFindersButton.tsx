@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Users, ArrowRight, AlertCircle } from 'lucide-react';
+import UpgradeButton from './UpgradeButton';
 
 interface AskFindersButtonProps {
   searchId: string;
@@ -13,7 +14,7 @@ interface AskFindersButtonProps {
   existingRequestId: string | null;
 }
 
-type Phase = 'idle' | 'pending' | 'asked' | 'error';
+type Phase = 'idle' | 'pending' | 'asked' | 'error' | 'limit-reached';
 
 export default function AskFindersButton({ searchId, existingRequestId }: AskFindersButtonProps) {
   const [phase, setPhase] = useState<Phase>(existingRequestId ? 'asked' : 'idle');
@@ -36,6 +37,11 @@ export default function AskFindersButton({ searchId, existingRequestId }: AskFin
         return;
       }
       if (!res.ok || !data.ok) {
+        if (data.limitReached) {
+          setErrorMessage(data.message);
+          setPhase('limit-reached');
+          return;
+        }
         throw new Error(data.message || 'That didn\u2019t go through.');
       }
 
@@ -55,6 +61,15 @@ export default function AskFindersButton({ searchId, existingRequestId }: AskFin
       >
         <Users size={13} /> View request <ArrowRight size={12} />
       </Link>
+    );
+  }
+
+  if (phase === 'limit-reached') {
+    return (
+      <div className="flex shrink-0 flex-col items-end gap-1.5">
+        <p className="max-w-[24ch] text-right text-[0.78rem] text-inkSoft">{errorMessage}</p>
+        <UpgradeButton />
+      </div>
     );
   }
 

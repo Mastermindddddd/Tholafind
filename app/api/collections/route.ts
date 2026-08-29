@@ -4,6 +4,8 @@ import { Collection, CollectionItem, SearchResult } from '@/lib/models';
 
 export const dynamic = 'force-dynamic';
 
+const FREE_TIER_COLLECTION_LIMIT = 3;
+
 export async function GET() {
   const user = await getOrCreateUser();
   if (!user) {
@@ -53,6 +55,24 @@ export async function POST(request: Request) {
   const name = typeof body.name === 'string' ? body.name.trim().slice(0, 80) : '';
   if (!name) {
     return NextResponse.json({ ok: false, message: 'Give the collection a name.' }, { status: 400 });
+  }
+
+  // Reads User.tier directly rather than a live Stripe check — there's no
+  // billing system as of earlier phases, but Phase 8 wires it up, and the
+  // field already defaults every account to 'free', so this is a real
+  // enforcement of the limit already promised on the landing page.
+  if (user.tier === 'free') {
+    const existingCount = await Collection.countDocuments({ userId: user._id });
+    if (existingCount >= FREE_TIER_COLLECTION_LIMIT) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: `Free accounts get ${FREE_TIER_COLLECTION_LIMIT} collections \u2014 upgrade to Plus for unlimited.`,
+          limitReached: true,
+        },
+        { status: 403 }
+      );
+    }
   }
 
   try {

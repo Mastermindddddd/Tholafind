@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   // document — there's no billing system yet (that's Phase 8), but the
   // field already defaults every account to 'free', so this is an honest
   // enforcement of the limit already promised on the pricing page, not a
-  // placeholder. Once Phase 8 wires Stripe, upgrading a user's tier here
+  // placeholder. Phase 8 wires this up via Paddle; upgrading a user's tier
   // is the only change this check needs.
   if (user.tier === 'free') {
     const countThisMonth = await CommunityRequest.countDocuments({
@@ -66,6 +66,7 @@ export async function POST(request: Request) {
         {
           ok: false,
           message: `Free accounts get ${FREE_TIER_MONTHLY_LIMIT} community requests a month \u2014 upgrade to Plus for unlimited.`,
+          limitReached: true,
         },
         { status: 403 }
       );
