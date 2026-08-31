@@ -29,8 +29,8 @@ export default function UpgradeButton({ label = 'Upgrade to Plus' }: { label?: s
   const router = useRouter();
 
   useEffect(() => {
-    const clientToken = process.env.PADDLE_CLIENT_TOKEN;
-    const environment = process.env.PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox';
+    const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
+    const environment = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox';
 
     if (!clientToken) {
       setErrorMessage('Billing isn\u2019t configured yet.');
@@ -75,7 +75,7 @@ export default function UpgradeButton({ label = 'Upgrade to Plus' }: { label?: s
       return;
     }
 
-    const priceId = process.env.PADDLE_PRICE_ID;
+    const priceId = process.env.NEXT_PUBLIC_PADDLE_PRICE_ID;
     if (!priceId || !paddleRef.current) {
       setErrorMessage('Billing isn\u2019t configured yet.');
       setPhase('error');
