@@ -47,8 +47,8 @@ export default async function AccountPage() {
           {isPlus ? (
             <>
               <p className="mt-4 text-[0.88rem] text-inkSoft">
-                Unlimited collections, unlimited community requests. Manage or cancel your
-                subscription anytime &mdash; no phone call, no retention maze.
+                Unlimited collections, unlimited community requests, unlimited watched hunts. Manage
+                or cancel your subscription anytime &mdash; no phone call, no retention maze.
               </p>
               <div className="mt-5">
                 <ManageBillingButton />
@@ -57,7 +57,7 @@ export default async function AccountPage() {
           ) : (
             <>
               <ul className="mt-4 space-y-1.5 text-[0.85rem] text-inkSoft">
-                <li>3 collections, 2 community requests a month on Free</li>
+                <li>3 collections, 2 community requests a month, 1 watched hunt on Free</li>
                 <li>Search itself is always unlimited, on every plan</li>
               </ul>
               <div className="mt-5">

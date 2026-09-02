@@ -5,6 +5,7 @@ import { Search } from '@/lib/models';
 import { generateUniqueReference } from '@/lib/generateReference';
 import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import { runSearch } from '@/lib/search/runSearch';
+import { checkSearchRateLimit } from '@/lib/rateLimit/checkSearchRateLimit';
 
 export const dynamic = 'force-dynamic';
 // The default serverless timeout is too short for a full multi-source
@@ -41,6 +42,20 @@ export async function POST(request: Request) {
     // Anonymous search is allowed by design (Phase 1) — a null user is fine here,
     // Search.userId is optional.
     const user = await getOrCreateUser();
+
+    // Cost/abuse protection, not a pricing lever — see
+    // checkSearchRateLimit.ts. Applies before either path below, since
+    // both trigger a full multi-source search.
+    const rateLimit = await checkSearchRateLimit(request, user?._id ?? null);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "You've made a lot of searches very quickly \u2014 try again in a few hours.",
+        },
+        { status: 429 }
+      );
+    }
 
     // Path 1: the "try a sample hunt" demo — reuses an existing hosted image
     // instead of re-uploading it to Blob storage.

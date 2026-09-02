@@ -3,7 +3,9 @@ import { put } from '@vercel/blob';
 import { Types } from 'mongoose';
 import { connectToDatabase } from '@/lib/db';
 import { Search } from '@/lib/models';
+import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import { runSearch } from '@/lib/search/runSearch';
+import { checkSearchRateLimit } from '@/lib/rateLimit/checkSearchRateLimit';
 
 export const dynamic = 'force-dynamic';
 // Same reasoning as /api/upload — a full re-run of the multi-source search
@@ -32,6 +34,22 @@ const MAX_IMAGES = 3; // matches the Search schema's own validation
 export async function POST(request: Request) {
   try {
     await connectToDatabase();
+
+    // Cost/abuse protection, not a pricing lever — refine triggers a full
+    // re-run of the multi-source search, the same provider cost as a fresh
+    // upload, so it's checked against the same daily cap. See
+    // checkSearchRateLimit.ts.
+    const user = await getOrCreateUser();
+    const rateLimit = await checkSearchRateLimit(request, user?._id ?? null);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "You've made a lot of searches very quickly \u2014 try again in a few hours.",
+        },
+        { status: 429 }
+      );
+    }
 
     const contentType = request.headers.get('content-type') || '';
     let searchId: string | null = null;

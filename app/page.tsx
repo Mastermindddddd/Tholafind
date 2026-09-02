@@ -41,7 +41,7 @@ const features = [
   {
     icon: FolderOpen,
     title: 'Hunts you can leave and return to',
-    body: 'Every search is saved automatically, and you can watch any hunt for updates \u2014 we\u2019ll check daily and tell you about a new listing or a price drop. Come back in a month and pick up exactly where you left off.',
+    body: 'Every search is saved automatically, and you can watch a hunt for updates \u2014 we\u2019ll check daily and tell you about a new listing or a price drop. Come back in a month and pick up exactly where you left off.',
   },
 ];
 
@@ -128,8 +128,9 @@ export default function HomePage() {
             <p className="mt-3 max-w-lg text-[0.92rem] leading-relaxed text-inkSoft">
               Every hunt starts free, and free means a real search across retail, resale, and vintage
               &mdash; not a locked screen after your first upload. Search itself is unlimited on every
-              plan. Plus removes the two limits that exist on Free: how many collections you can
-              keep, and how many times a month you can ask the community for help.
+              plan. Plus removes the limits that exist on Free: how many collections you can keep,
+              how many times a month you can ask the community for help, and how many hunts you can
+              watch for updates at once.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -141,6 +142,7 @@ export default function HomePage() {
                 <li>Retail, resale &amp; vintage results</li>
                 <li>3 collections</li>
                 <li>2 community requests / month</li>
+                <li>Watch 1 hunt for updates</li>
               </ul>
             </div>
             <div className="rounded-md border border-brass bg-paper p-5">
@@ -149,6 +151,7 @@ export default function HomePage() {
               <ul className="mt-4 space-y-2 text-[0.82rem] text-inkSoft">
                 <li>Unlimited collections</li>
                 <li>Unlimited community requests</li>
+                <li>Watch unlimited hunts for updates</li>
               </ul>
               <div className="mt-4">
                 <UpgradeButton label="Get Plus" />

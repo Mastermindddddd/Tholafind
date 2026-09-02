@@ -5,3 +5,4 @@ export { Collection, type CollectionDoc, CollectionItem, type CollectionItemDoc 
 export { CommunityRequest, type CommunityRequestDoc } from './CommunityRequest';
 export { Alert, type AlertDoc } from './Alert';
 export { Subscription, type SubscriptionDoc } from './Subscription';
+export { SearchRateLimit, type SearchRateLimitDoc } from './SearchRateLimit';

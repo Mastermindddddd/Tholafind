@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, BellRing } from 'lucide-react';
+import UpgradeButton from './UpgradeButton';
 
 export interface AlertNotificationData {
   message: string;
@@ -16,6 +17,8 @@ interface AlertToggleProps {
   recentNotifications: AlertNotificationData[];
 }
 
+type PopoverMode = 'none' | 'notifications' | 'limit-reached';
+
 export default function AlertToggle({
   searchId,
   initialWatched,
@@ -25,13 +28,14 @@ export default function AlertToggle({
   const [watched, setWatched] = useState(initialWatched);
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
   const [pending, setPending] = useState(false);
-  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [popover, setPopover] = useState<PopoverMode>('none');
+  const [limitMessage, setLimitMessage] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setPopoverOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) setPopover('none');
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -42,7 +46,7 @@ export default function AlertToggle({
     e.stopPropagation();
 
     if (unreadCount > 0) {
-      setPopoverOpen((open) => !open);
+      setPopover((p) => (p === 'notifications' ? 'none' : 'notifications'));
       return;
     }
 
@@ -57,11 +61,22 @@ export default function AlertToggle({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ searchId }),
       });
+
       if (res.status === 401) {
         router.push('/sign-in');
         return;
       }
-      if (!res.ok) throw new Error();
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data?.limitReached) {
+          setWatched(false); // roll back — the watch was not actually turned on
+          setLimitMessage(data.message);
+          setPopover('limit-reached');
+          return;
+        }
+        throw new Error();
+      }
     } catch {
       setWatched(!next); // roll back
     } finally {
@@ -73,7 +88,7 @@ export default function AlertToggle({
     e.preventDefault();
     e.stopPropagation();
     setUnreadCount(0);
-    setPopoverOpen(false);
+    setPopover('none');
     try {
       await fetch('/api/alerts/seen', { method: 'POST' });
       router.refresh();
@@ -107,7 +122,7 @@ export default function AlertToggle({
         </span>
       )}
 
-      {popoverOpen && (
+      {popover === 'notifications' && (
         <div
           onClick={(e) => e.stopPropagation()}
           className="absolute right-0 top-10 z-20 w-64 rounded-md border border-line bg-card p-3 text-left shadow-cardHover"
@@ -128,6 +143,18 @@ export default function AlertToggle({
           >
             Mark all seen
           </button>
+        </div>
+      )}
+
+      {popover === 'limit-reached' && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute right-0 top-10 z-20 w-60 rounded-md border border-line bg-card p-3 text-left shadow-cardHover"
+        >
+          <p className="text-[0.82rem] text-ink">{limitMessage}</p>
+          <div className="mt-3">
+            <UpgradeButton label="Get Plus" />
+          </div>
         </div>
       )}
     </div>
