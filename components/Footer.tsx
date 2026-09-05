@@ -16,7 +16,7 @@ export default function Footer() {
             the one that&rsquo;s been out of stock for months. We keep looking after the first search stops.
           </p>
         </div>
-        <!-- Awin -->
+        <span className="sr-only">Awin</span>
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-line pt-5 font-mono text-[0.65rem] uppercase tracking-[0.1em] text-inkSoft">
           <span>&copy; {new Date().getFullYear()} Tholafind</span>
           <span>No card required to start a hunt</span>
