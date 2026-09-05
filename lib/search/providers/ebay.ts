@@ -6,8 +6,30 @@ interface EbayItem {
   image?: { imageUrl?: string };
   price?: { value?: string; currency?: string };
   itemWebUrl?: string;
+  /** Only present when the request includes an affiliateCampaignId — see
+   * buildEndUserCtxHeader() below. Must be used instead of itemWebUrl to
+   * actually receive eBay Partner Network commission; eBay's own docs are
+   * explicit that itemWebUrl alone doesn't carry the tracking ID. */
+  itemAffiliateWebUrl?: string;
   condition?: string;
   itemId?: string;
+}
+
+/**
+ * eBay Partner Network affiliate tracking, built into the Browse API
+ * natively — no separate link-wrapping step. Passing a campaign ID in this
+ * header makes the API return `itemAffiliateWebUrl` on each item, which is
+ * what must be used to actually earn commission (confirmed against eBay's
+ * own Browse API docs, not assumed).
+ *
+ * Skipped gracefully when EBAY_EPN_CAMPAIGN_ID isn't set — search still
+ * works and returns the plain itemWebUrl, just without affiliate tracking.
+ * This is a monetization add-on, not something search depends on.
+ */
+function buildEndUserCtxHeader(): string | undefined {
+  const campaignId = process.env.EBAY_EPN_CAMPAIGN_ID;
+  if (!campaignId) return undefined;
+  return `affiliateCampaignId=${campaignId}`;
 }
 
 /**
@@ -90,10 +112,12 @@ export async function searchEbay(query: string): Promise<RawCandidate[]> {
   url.searchParams.set('q', query);
   url.searchParams.set('limit', '8');
 
+  const endUserCtx = buildEndUserCtxHeader();
   const res = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${token}`,
       'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
+      ...(endUserCtx ? { 'X-EBAY-C-ENDUSERCTX': endUserCtx } : {}),
     },
   });
   if (!res.ok) {
@@ -110,7 +134,10 @@ export async function searchEbay(query: string): Promise<RawCandidate[]> {
         title: it.title,
         image: it.image.imageUrl,
         price: it.price?.value ? `$${it.price.value}` : undefined,
-        url: it.itemWebUrl,
+        // Falls back to the plain URL when affiliate tracking isn't
+        // configured — itemAffiliateWebUrl only exists on the response at
+        // all when EBAY_EPN_CAMPAIGN_ID was sent in the request header.
+        url: it.itemAffiliateWebUrl || it.itemWebUrl,
         source: 'eBay',
         sourceKind: 'resale',
         metadata: { condition: it.condition ?? null, itemId: it.itemId ?? null },
