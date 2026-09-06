@@ -71,8 +71,8 @@ export default function RefundPolicyPage() {
             <h2 className="font-display text-xl font-semibold text-ink">5. How to request a refund</h2>
             <p className="mt-2">
               Email us at{' '}
-              <a href="mailto:[SUPPORT EMAIL]" className="text-brick underline">
-                [SUPPORT EMAIL]
+              <a href="mailto:support@tholafind.com" className="text-brick underline">
+                support@tholafind.com
               </a>{' '}
               with the email address on your account and the reason for your request, or use the
               link in your Paddle receipt email to go directly to Paddle&rsquo;s support. We
@@ -102,8 +102,8 @@ export default function RefundPolicyPage() {
             <h2 className="font-display text-xl font-semibold text-ink">8. Contact</h2>
             <p className="mt-2">
               Questions about billing or refunds? Reach us at{' '}
-              <a href="mailto:[SUPPORT EMAIL]" className="text-brick underline">
-                [SUPPORT EMAIL]
+              <a href="mailto:support@tholafind.com" className="text-brick underline">
+                support@tholafind.com
               </a>
               .
             </p>
