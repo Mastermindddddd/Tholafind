@@ -17,10 +17,16 @@ export default function Footer() {
           </p>
         </div>
         <span className="sr-only">Awin</span>
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-line pt-5 font-mono text-[0.65rem] uppercase tracking-[0.1em] text-inkSoft">
-          <span>&copy; {new Date().getFullYear()} Tholafind</span>
-          <span>No card required to start a hunt</span>
-        </div>
+        
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-line pt-5 font-mono text-[0.65rem] uppercase tracking-[0.1em] text-inkSoft">
+    <span>© {new Date().getFullYear()} Tholafind</span>
+    <div className="flex items-center gap-4">
+      <a href="/terms" className="hover:text-ink">Terms</a>
+      <a href="/privacy" className="hover:text-ink">Privacy</a>
+      <a href="/refund-policy" className="hover:text-ink">Refunds</a>
+    </div>
+  </div>
+
       </div>
     </footer>
   );
