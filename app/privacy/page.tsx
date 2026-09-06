@@ -129,8 +129,8 @@ export default function PrivacyPage() {
               Depending on where you live, you may have the right to access, correct, export, or
               delete your personal information, or to object to certain uses of it. To exercise any
               of these rights, contact us at{' '}
-              <a href="mailto:[SUPPORT EMAIL]" className="text-brick underline">
-                [SUPPORT EMAIL]
+              <a href="mailto:support@tholafind.com" className="text-brick underline">
+                support@tholafind.com
               </a>
               , and we&rsquo;ll respond within a reasonable time.
             </p>
@@ -178,8 +178,8 @@ export default function PrivacyPage() {
             <h2 className="font-display text-xl font-semibold text-ink">11. Contact</h2>
             <p className="mt-2">
               Questions about this policy or your data? Reach us at{' '}
-              <a href="mailto:[SUPPORT EMAIL]" className="text-brick underline">
-                [SUPPORT EMAIL]
+              <a href="mailto:support@tholafind.com" className="text-brick underline">
+                support@tholafind.com
               </a>
               .
             </p>

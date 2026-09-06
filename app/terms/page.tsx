@@ -197,8 +197,8 @@ export default function TermsPage() {
             <h2 className="font-display text-xl font-semibold text-ink">14. Contact</h2>
             <p className="mt-2">
               Questions about these Terms? Reach us at{' '}
-              <a href="mailto:cephas@tholafind.com" className="text-brick underline">
-                cephas@tholafind.com
+              <a href="mailto:support@tholafind.com" className="text-brick underline">
+                support@tholafind.com
               </a>
               .
             </p>
