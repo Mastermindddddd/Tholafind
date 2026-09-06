@@ -24,6 +24,7 @@ export default function Footer() {
       <a href="/terms" className="hover:text-ink">Terms</a>
       <a href="/privacy" className="hover:text-ink">Privacy</a>
       <a href="/refund-policy" className="hover:text-ink">Refunds</a>
+      <a href="/pricing" className="hover:text-ink">Pricing</a>
     </div>
   </div>
 
