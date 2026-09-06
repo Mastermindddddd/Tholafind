@@ -86,24 +86,24 @@ export default function Navbar() {
             </div>
 
             {/* Start Hunt */}
-            <Link
+            {/*<Link
               href="/"
               onClick={closeMobileMenu}
               className="rounded-full bg-pine px-3.5 py-2 font-mono text-[0.65rem] uppercase tracking-[0.1em] text-paper transition-colors hover:bg-pineDeep sm:px-4 sm:text-[0.72rem] sm:tracking-[0.12em]"
             >
               Start a hunt
-            </Link>
+            </Link>*/}
           </SignedOut>
 
           <SignedIn>
             {/* Start Hunt */}
-            <Link
+            {/*<Link
               href="/"
               onClick={closeMobileMenu}
               className="rounded-full bg-pine px-3.5 py-2 font-mono text-[0.65rem] uppercase tracking-[0.1em] text-paper transition-colors hover:bg-pineDeep sm:px-4 sm:text-[0.72rem] sm:tracking-[0.12em]"
             >
               Start a hunt
-            </Link>
+            </Link>*/}
 
             {/* User */}
             <UserButton
