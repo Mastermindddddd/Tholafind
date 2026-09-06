@@ -187,7 +187,7 @@ export default function TermsPage() {
           <section>
             <h2 className="font-display text-xl font-semibold text-ink">13. Governing law</h2>
             <p className="mt-2">
-              These Terms are governed by the laws of [JURISDICTION], without regard to conflict-of-law
+              These Terms are governed by the laws of South Africa, without regard to conflict-of-law
               principles, except where local consumer protection law requires otherwise for your
               purchase.
             </p>
@@ -197,8 +197,8 @@ export default function TermsPage() {
             <h2 className="font-display text-xl font-semibold text-ink">14. Contact</h2>
             <p className="mt-2">
               Questions about these Terms? Reach us at{' '}
-              <a href="mailto:[SUPPORT EMAIL]" className="text-brick underline">
-                [SUPPORT EMAIL]
+              <a href="mailto:cephas@tholafind.com" className="text-brick underline">
+                cephas@tholafind.com
               </a>
               .
             </p>
