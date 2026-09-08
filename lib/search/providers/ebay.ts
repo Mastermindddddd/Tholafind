@@ -5,6 +5,12 @@ interface EbayItem {
   title?: string;
   image?: { imageUrl?: string };
   price?: { value?: string; currency?: string };
+  /** Auction-format listings have no fixed price — eBay represents their
+   * real, displayed "current bid" amount under this separate field
+   * instead. Missing this was a real gap: any auction result silently
+   * showed "Price unavailable" even though the actual eBay page clearly
+   * shows a bid amount. */
+  currentBidPrice?: { value?: string; currency?: string };
   itemWebUrl?: string;
   /** Only present when the request includes an affiliateCampaignId — see
    * buildEndUserCtxHeader() below. Must be used instead of itemWebUrl to
@@ -133,10 +139,15 @@ export async function searchEbay(query: string): Promise<RawCandidate[]> {
       return {
         title: it.title,
         image: it.image.imageUrl,
-        price: it.price?.value ? `$${it.price.value}` : undefined,
-        // Falls back to the plain URL when affiliate tracking isn't
-        // configured — itemAffiliateWebUrl only exists on the response at
-        // all when EBAY_EPN_CAMPAIGN_ID was sent in the request header.
+        // Fixed-price listings use `price`; auction-format listings have
+        // no fixed price at all and carry their current bid under
+        // `currentBidPrice` instead — both represent a real, displayed
+        // price on the actual eBay page, so both need checking.
+        price: it.price?.value
+          ? `$${it.price.value}`
+          : it.currentBidPrice?.value
+            ? `$${it.currentBidPrice.value} (current bid)`
+            : undefined,
         url: it.itemAffiliateWebUrl || it.itemWebUrl,
         source: 'eBay',
         sourceKind: 'resale',

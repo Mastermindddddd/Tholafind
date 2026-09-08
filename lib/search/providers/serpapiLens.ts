@@ -7,9 +7,27 @@ interface LensMatch {
   source?: string;
   thumbnail?: string;
   image?: string;
-  price?: { value?: string };
+  /** Real SerpApi responses are inconsistent here across different
+   * matched retailers — sometimes a formatted `value` string is present,
+   * sometimes only a numeric `extracted_value` + `currency` (no
+   * pre-formatted string at all), and rarely `price` itself is a bare
+   * string rather than an object. Narrowly checking only `price.value`
+   * (the original implementation) silently dropped every other shape to
+   * "Price unavailable" even when the matched page clearly has a price —
+   * see extractLensPrice() below for the actual fix. */
+  price?: { value?: string; extracted_value?: number; currency?: string } | string;
   in_stock?: boolean;
   position?: number;
+}
+
+function extractLensPrice(price: LensMatch['price']): string | undefined {
+  if (!price) return undefined;
+  if (typeof price === 'string') return price;
+  if (price.value) return price.value;
+  if (typeof price.extracted_value === 'number') {
+    return price.currency ? `${price.currency} ${price.extracted_value}` : `$${price.extracted_value}`;
+  }
+  return undefined;
 }
 
 /**
@@ -47,7 +65,7 @@ async function searchGoogleLensSingle(imageUrl: string, apiKey: string): Promise
       return {
         title: m.title || 'Untitled item',
         image,
-        price: m.price?.value,
+        price: extractLensPrice(m.price),
         url: m.link,
         source,
         sourceKind: 'retail',
