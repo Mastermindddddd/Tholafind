@@ -8,9 +8,9 @@ export default function SignUpPage() {
           <p className="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-brick">
             Start your first hunt
           </p>
-          <h1 className="mt-2 font-display text-2xl font-semibold text-ink">
+          {/*<h1 className="mt-2 font-display text-2xl font-semibold text-ink">
             Create your Tholafind account
-          </h1>
+          </h1>*/}
         </div>
         <SignUp
           forceRedirectUrl="/onboarding"
