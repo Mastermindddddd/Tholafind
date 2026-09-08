@@ -129,7 +129,7 @@ export default function UploadDropzone() {
               Drop a photo of what you&rsquo;re after
             </p>
             <p className="mx-auto mt-1.5 max-w-[26ch] text-[0.85rem] text-inkSoft">
-              A screenshot, a thrift find, a blurry photo from across the room &mdash; any of it works.
+              A screenshot, a thrift find, a blurry photo from across the room - any of it works.
             </p>
 
             <div className="mt-5 flex flex-col items-center gap-2.5">

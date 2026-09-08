@@ -14,12 +14,12 @@ const steps = [
   {
     tag: 'Specimen 01',
     title: 'Log it',
-    body: 'Snap it, screenshot it, or drop a photo you already have. Add a hint if you know one — a color, a material, a brand guess.',
+    body: 'Snap it, screenshot it, or drop a photo you already have. Add a hint if you know one - a color, a material, a brand guess.',
   },
   {
     tag: 'Specimen 02',
     title: 'We search everywhere at once',
-    body: 'Retail, marketplaces, and resale sites are checked together — not just one catalog — so you’re not stuck if it’s not sold where you started.',
+    body: 'Retail, marketplaces, and resale sites are checked together - not just one catalog - so you’re not stuck if it’s not sold where you started.',
   },
   {
     tag: 'Specimen 03',
@@ -37,7 +37,7 @@ const features = [
   {
     icon: ImageOff,
     title: 'Built for bad photos',
-    body: 'Blurry, cropped, low light, no tag — that’s the norm, not the exception. When we’re unsure, we say so, and ask for the detail that would help.',
+    body: 'Blurry, cropped, low light, no tag - that’s the norm, not the exception. When we’re unsure, we say so, and ask for the detail that would help.',
   },
   {
     icon: Users,
@@ -47,7 +47,7 @@ const features = [
   {
     icon: FolderOpen,
     title: 'Hunts you can leave and return to',
-    body: 'Every search is saved automatically, and you can watch a hunt for updates — we’ll check daily and tell you about a new listing or a price drop. Come back in a month and pick up exactly where you left off.',
+    body: 'Every search is saved automatically, and you can watch a hunt for updates - we’ll check daily and tell you about a new listing or a price drop. Come back in a month and pick up exactly where you left off.',
   },
 ];
 
@@ -133,7 +133,7 @@ export default function HomePage() {
               "
             >
               Tholafind turns a photo into a search across retail, resale,
-              and vintage sources at once &mdash; and calls in real people
+              and vintage sources at once and calls in real people
               when the algorithm runs out of ideas.
             </p>
           </div>
