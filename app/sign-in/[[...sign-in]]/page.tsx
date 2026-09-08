@@ -8,9 +8,9 @@ export default function SignInPage() {
           <p className="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-brick">
             Welcome back
           </p>
-          <h1 className="mt-2 font-display text-2xl font-semibold text-ink">
+          {/*<h1 className="mt-2 font-display text-2xl font-semibold text-ink">
             Sign in to Tholafind
-          </h1>
+          </h1>*/}
         </div>
         <SignIn
           forceRedirectUrl="/onboarding"
