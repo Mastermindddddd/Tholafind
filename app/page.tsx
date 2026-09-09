@@ -519,9 +519,9 @@ export default function HomePage() {
       </svg>
 
       <div className="text-left leading-none">
-        <p className="font-mono text-[0.48rem] uppercase tracking-wide text-paper/55">
+        {/*<p className="font-mono text-[0.48rem] uppercase tracking-wide text-paper/55">
           Coming soon on
-        </p>
+        </p>*/}
         <p className="mt-1 font-display text-sm font-medium text-paper">
           App Store
         </p>
@@ -567,9 +567,9 @@ export default function HomePage() {
       </svg>
 
       <div className="text-left leading-none">
-        <p className="font-mono text-[0.48rem] uppercase tracking-wide text-paper/55">
+        {/* <p className="font-mono text-[0.48rem] uppercase tracking-wide text-paper/55">
           Coming soon on
-        </p>
+        </p>*/}
         <p className="mt-1 font-display text-sm font-medium text-paper">
           Google Play
         </p>
