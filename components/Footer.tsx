@@ -12,7 +12,7 @@ export default function Footer() {
             <span className="font-display text-base font-semibold text-ink">Tholafind</span>
           </div>
           <p className="max-w-md text-[0.8rem] text-inkSoft">
-            Built for the hunt &mdash; the thing you can&rsquo;t name, the piece from a photo,
+            Built for the hunt - the thing you can&rsquo;t name, the piece from a photo,
             the one that&rsquo;s been out of stock for months. We keep looking after the first search stops.
           </p>
         </div>

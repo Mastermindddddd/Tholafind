@@ -49,8 +49,14 @@ async function searchGoogleLensSingle(imageUrl: string, apiKey: string): Promise
   const data = await res.json();
   const matches: LensMatch[] = data.visual_matches || [];
 
+  // Raised from 8: SerpApi's own visual_matches already spans a wide set
+  // of retailers per call (confirmed against real response examples, not
+  // assumed) — the low cap was silently discarding a chunk of that variety
+  // for free, not saving any API cost. With multi-image merge (Phase 4)
+  // deduping by URL afterward, a higher per-image cap here is what
+  // actually improves the mix of stores a search surfaces.
   return matches
-    .slice(0, 8)
+    .slice(0, 16)
     .map((m): RawCandidate | null => {
       const image = m.thumbnail || m.image;
       if (!image || !m.link) return null;

@@ -425,7 +425,7 @@ export default function HomePage() {
               "
             >
               Every hunt starts free, and free means a real search across
-              retail, resale, and vintage &mdash; not a locked screen after
+              retail, resale, and vintage - not a locked screen after
               your first upload. Search itself is unlimited on every plan.
               Plus removes the limits that exist on Free: how many
               collections you can keep, how many times a month you can ask

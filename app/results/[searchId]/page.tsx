@@ -60,7 +60,11 @@ export default async function ResultsPage({ params }: PageProps) {
       title: doc.title,
       source: doc.source,
       sourceKind: doc.sourceKind,
-      price: doc.price || 'Price unavailable',
+      // A small number of retail matches are non-commerce pages Google
+      // Lens matched visually rather than genuine product listings — those
+      // will never have a price to extract, no matter how the parsing
+      // improves. "See price on site" reads as a next step, not a dead end.
+      price: doc.price || 'See price on site',
       confidence: doc.confidence,
       image: doc.image,
       url: doc.url,
