@@ -100,7 +100,7 @@ export default async function CollectionsPage() {
         </h1>
         <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
           Every search you start is saved automatically. Anything you save from a results page
-          lands in a collection below &mdash; walk away for a month, and pick up exactly where you
+          lands in a collection below - walk away for a month, and pick up exactly where you
           left off.
         </p>
       </section>
@@ -110,7 +110,7 @@ export default async function CollectionsPage() {
         <h2 className="font-display text-xl font-semibold text-ink">Recent hunts</h2>
         {hunts.length === 0 ? (
           <p className="mt-3 text-[0.88rem] text-inkSoft">
-            No hunts yet &mdash; head to the home page and drop in a photo to start your first one.
+            No hunts yet - head to the home page and drop in a photo to start your first one.
           </p>
         ) : (
           <>
@@ -124,7 +124,7 @@ export default async function CollectionsPage() {
                 <Bell size={14} />
               </span>
               <p className="text-[0.85rem] text-inkSoft">
-                Tap the bell on any hunt above to watch it &mdash; Tholafind checks daily for new
+                Tap the bell on any hunt above to watch it - Tholafind checks daily for new
                 listings or a price drop, so you don&rsquo;t have to keep coming back to look.
               </p>
             </div>
