@@ -3,11 +3,12 @@ import Script from 'next/script';
 import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
 
-export const metadata: Metadata = {
-  title: 'Tholafind — Log it. We\u2019ll track it down.',
-  description:
-    'Snap a photo of anything you can\u2019t find, and Tholafind searches retail, marketplaces, and resale at once \u2014 with a crowd of finders standing by when the trail goes cold.',
-};
+  export const metadata: Metadata = {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://tholafind.com'),
+    title: 'Tholafind - Log it. We\u2019ll track it down.',
+    description: 'Snap a photo of anything you can\u2019t find, and Tholafind searches retail, marketplaces, and resale at once \u2014 with a crowd of finders standing by when the trail goes cold.',
+  };
+
 
 export default function RootLayout({
   children,

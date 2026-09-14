@@ -25,6 +25,14 @@ const SearchResultSchema = new Schema(
 
 SearchResultSchema.index({ searchId: 1, confidence: 1 });
 
+// Added for the public /browse feature: fast lookups of recent,
+// high-confidence results across ALL searches (not scoped to one searchId),
+// which the original index above doesn't serve well since it's led by
+// searchId. Compound so a single index also covers the category pages'
+// sourceKind + confidence + recency queries.
+SearchResultSchema.index({ confidence: 1, createdAt: -1 });
+SearchResultSchema.index({ sourceKind: 1, confidence: 1, createdAt: -1 });
+
 export type SearchResultDoc = InferSchemaType<typeof SearchResultSchema> & { _id: Types.ObjectId };
 
 export const SearchResult: Model<SearchResultDoc> =

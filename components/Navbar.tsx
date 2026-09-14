@@ -14,6 +14,7 @@ import {
 const links = [
   { href: '/', label: 'Search' },
   { href: '/collections', label: 'Collections' },
+  { href: '/browse', label: 'Browse' },
   { href: '/community', label: 'Community' },
 ];
 
