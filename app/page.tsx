@@ -310,7 +310,7 @@ export default function HomePage() {
 <div className="mt-1.5 flex items-center gap-1.5 sm:gap-2">
   <span className="h-px w-4 bg-pine/30 sm:w-5" />
   <span className="font-mono text-[0.46rem] uppercase tracking-[0.14em] text-inkSoft sm:text-[0.52rem] sm:tracking-[0.16em]">
-    Find the things you can't find
+    Find the things you can&apos;t find
   </span>
   <span className="h-px w-4 bg-pine/30 sm:w-5" />
 </div>
