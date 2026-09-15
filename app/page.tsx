@@ -142,13 +142,14 @@ export default function HomePage() {
 <div
   className="
     pointer-events-none absolute
-    left-[-14px] top-20
+    left-[-14px] top-[40%]
+    z-20
     w-14
     rotate-[5deg]
     rounded-sm bg-white p-1
     shadow-[0_6px_14px_rgba(0,0,0,0.10)]
-    sm:left-[-18px] sm:top-28 sm:w-20 sm:p-1.5
-    lg:left-[-20px] lg:top-[38%] lg:w-44 lg:p-2
+    sm:left-[-18px] sm:w-20 sm:p-1.5
+    lg:left-[-20px] lg:w-44 lg:p-2
     lg:shadow-[0_12px_30px_rgba(0,0,0,0.10)]
     xl:left-12
   "
@@ -266,13 +267,14 @@ export default function HomePage() {
 <div
   className="
     pointer-events-none absolute
-    right-[-14px] top-20
+    right-[-14px] top-[40%]
+    z-20
     w-14
     rotate-[-6deg]
     rounded-sm bg-white p-1
     shadow-[0_6px_14px_rgba(0,0,0,0.10)]
-    sm:right-[-18px] sm:top-28 sm:w-20 sm:p-1.5
-    lg:right-[-20px] lg:top-[40%] lg:w-44 lg:p-2
+    sm:right-[-18px] sm:w-20 sm:p-1.5
+    lg:right-[-20px] lg:w-44 lg:p-2
     lg:shadow-[0_12px_30px_rgba(0,0,0,0.10)]
     xl:right-12
   "
