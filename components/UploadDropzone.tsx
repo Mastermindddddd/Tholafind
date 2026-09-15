@@ -6,9 +6,9 @@ import { Camera, Upload, ScanLine, AlertCircle } from 'lucide-react';
 
 type Phase = 'idle' | 'scanning' | 'error';
 
-const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8MB — kept in sync with app/api/upload/route.ts
+const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
-const MIN_SCAN_MS = 1100; // keeps the scan animation from flashing on fast responses
+const MIN_SCAN_MS = 1100;
 
 async function withMinimumDelay<T>(promise: Promise<T>, ms: number): Promise<T> {
   const [result] = await Promise.all([promise, new Promise((r) => setTimeout(r, ms))]);
@@ -21,6 +21,7 @@ export default function UploadDropzone() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [hint, setHint] = useState('');
+  const [showHint, setShowHint] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -104,7 +105,7 @@ export default function UploadDropzone() {
   }, [router]);
 
   return (
-    <div className="w-full max-w-md">
+    <div className="mx-auto w-full max-w-lg">
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -116,54 +117,80 @@ export default function UploadDropzone() {
           setDragActive(false);
           handleFile(e.dataTransfer.files?.[0]);
         }}
-        className={`relative overflow-hidden rounded-md border-2 border-dashed bg-card p-8 text-center shadow-card transition-colors ${
-          dragActive ? 'border-brick bg-paperDim' : 'border-line'
-        }`}
+        onClick={() => phase === 'idle' && inputRef.current?.click()}
+        className={`relative overflow-hidden rounded-xl border-2 border-dashed bg-paper/70 px-5 py-4 text-center shadow-card transition-colors sm:px-7 sm:py-5 ${
+          phase === 'idle' ? 'cursor-pointer' : ''
+        } ${dragActive ? 'border-brick bg-paperDim' : 'border-pine/30 hover:border-pine/50'}`}
       >
         {phase === 'idle' && (
           <>
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-pine text-brassLight">
-              <Camera size={20} />
+            <div className="relative mx-auto flex items-center justify-center">
+              <span aria-hidden className="absolute -left-6 text-sm text-brass sm:-left-8">
+                ✦
+              </span>
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-pine text-paper shadow-md sm:h-11 sm:w-11">
+                <Camera size={18} strokeWidth={1.5} />
+              </span>
+              <span aria-hidden className="absolute -right-6 text-sm text-pine/40 sm:-right-8">
+                ✦
+              </span>
             </div>
-            <p className="font-display text-lg font-semibold text-ink">
-              Drop a photo of what you&rsquo;re after
+
+            <p className="mt-2 font-display text-base font-semibold text-ink sm:text-lg">
+              Drop your photo here
             </p>
-            <p className="mx-auto mt-1.5 max-w-[26ch] text-[0.85rem] text-inkSoft">
-              A screenshot, a thrift find, a blurry photo from across the room - any of it works.
+            <p className="mt-0.5 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-inkSoft sm:text-[0.65rem]">
+              or click to upload
             </p>
 
-            <div className="mt-5 flex flex-col items-center gap-2.5">
-              <div className="w-full text-left">
-                <label
-                  htmlFor="upload-hint"
-                  className="font-mono text-[0.62rem] uppercase tracking-[0.08em] text-inkSoft"
+            <div
+              className="mt-3 flex flex-col items-center gap-1.5"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {showHint ? (
+                <div className="w-full text-left">
+                  <label
+                    htmlFor="upload-hint"
+                    className="font-mono text-[0.56rem] uppercase tracking-[0.08em] text-inkSoft"
+                  >
+                    Know a detail? (optional)
+                  </label>
+                  <input
+                    id="upload-hint"
+                    type="text"
+                    autoFocus
+                    value={hint}
+                    onChange={(e) => setHint(e.target.value.slice(0, 280))}
+                    placeholder="Color, material, a brand guess&hellip;"
+                    className="mt-1 w-full rounded-sm border border-line bg-paper px-3 py-1.5 text-[0.75rem] text-ink placeholder:text-inkSoft/70 focus:border-pine focus:outline-none"
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowHint(true)}
+                  className="font-mono text-[0.6rem] uppercase tracking-[0.08em] text-inkSoft underline decoration-dotted underline-offset-4 hover:text-pine"
                 >
-                  Know a detail? (optional)
-                </label>
-                <input
-                  id="upload-hint"
-                  type="text"
-                  value={hint}
-                  onChange={(e) => setHint(e.target.value.slice(0, 280))}
-                  placeholder="Color, material, a brand guess&hellip;"
-                  className="mt-1.5 w-full rounded-sm border border-line bg-paper px-3 py-2 text-[0.85rem] text-ink placeholder:text-inkSoft/70 focus:border-pine"
-                />
+                  + Add a detail (optional)
+                </button>
+              )}
+
+              <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                <button
+                  onClick={() => inputRef.current?.click()}
+                  className="flex items-center justify-center gap-1.5 rounded-full bg-pine px-4 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-paper transition-colors hover:bg-pineDeep"
+                >
+                  <Upload size={12} /> Choose a photo
+                </button>
+
+                <button
+                  onClick={handleDemo}
+                  className="font-mono text-[0.6rem] uppercase tracking-[0.08em] text-inkSoft underline decoration-dotted underline-offset-4 hover:text-brick"
+                >
+                  Try a sample hunt
+                </button>
               </div>
-
-              <button
-                onClick={() => inputRef.current?.click()}
-                className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-pine px-5 py-2.5 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-paper transition-colors hover:bg-pineDeep"
-              >
-                <Upload size={14} /> Choose a photo
-              </button>
-
-              <button
-                onClick={handleDemo}
-                className="font-mono text-[0.68rem] uppercase tracking-[0.1em] text-inkSoft underline decoration-dotted underline-offset-4 hover:text-brick"
-              >
-                Or try a sample hunt
-              </button>
             </div>
+
             <input
               ref={inputRef}
               type="file"
@@ -175,27 +202,27 @@ export default function UploadDropzone() {
         )}
 
         {phase === 'scanning' && previewUrl && (
-          <div className="relative mx-auto aspect-square w-full max-w-[220px] overflow-hidden rounded-sm border border-line">
+          <div className="relative mx-auto aspect-square w-full max-w-[160px] overflow-hidden rounded-sm border border-line">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={previewUrl} alt="Uploaded item" className="h-full w-full object-cover" />
             <div className="pointer-events-none absolute inset-0 bg-pine/25" />
             <div className="absolute left-0 right-0 h-[2px] bg-brassLight shadow-[0_0_12px_2px_rgba(217,174,107,0.8)] animate-scanline" />
-            <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-ink/70 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-paper">
-              <ScanLine size={11} className="animate-pulse" /> Logging specimen&hellip;
+            <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-ink/70 py-1 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-paper">
+              <ScanLine size={10} className="animate-pulse" /> Logging specimen&hellip;
             </div>
           </div>
         )}
 
         {phase === 'error' && (
-          <div className="py-2">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brick/10 text-brick">
-              <AlertCircle size={20} />
+          <div className="py-1" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-brick/10 text-brick">
+              <AlertCircle size={18} />
             </div>
-            <p className="font-display text-lg font-semibold text-ink">That didn&rsquo;t go through</p>
-            <p className="mx-auto mt-1.5 max-w-[30ch] text-[0.85rem] text-inkSoft">{errorMessage}</p>
+            <p className="font-display text-base font-semibold text-ink">That didn&rsquo;t go through</p>
+            <p className="mx-auto mt-1 max-w-[30ch] text-[0.8rem] text-inkSoft">{errorMessage}</p>
             <button
               onClick={reset}
-              className="mt-5 rounded-full bg-pine px-5 py-2.5 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-paper transition-colors hover:bg-pineDeep"
+              className="mt-3 rounded-full bg-pine px-4 py-2 font-mono text-[0.68rem] uppercase tracking-[0.1em] text-paper transition-colors hover:bg-pineDeep"
             >
               Try again
             </button>
@@ -203,7 +230,7 @@ export default function UploadDropzone() {
         )}
       </div>
 
-      <p className="mt-3 text-center font-mono text-[0.65rem] uppercase tracking-[0.1em] text-inkSoft">
+      <p className="mt-2 text-center font-mono text-[0.58rem] uppercase tracking-[0.08em] text-inkSoft sm:text-[0.6rem]">
         Retail &middot; Resale &middot; Vintage &mdash; searched at once
       </p>
     </div>

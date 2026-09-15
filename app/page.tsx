@@ -8,6 +8,11 @@ import {
   ImageOff,
   FolderOpen,
   ShieldCheck,
+  Camera,
+  Tag,
+  ShoppingBag,
+  RefreshCw,
+  Search,
 } from 'lucide-react';
 
 const steps = [
@@ -59,91 +64,348 @@ export default function HomePage() {
       {/* =========================================================
           HERO
       ========================================================= */}
-      <section className="relative overflow-hidden bg-pine">
-        <div className="paper-texture absolute inset-0 opacity-[0.06]" />
+      {/* =========================================================
+    HERO
+========================================================= */}
+<section
+  className="
+    relative
+    w-full
+    overflow-hidden
+    bg-paper
+    py-6
+    sm:py-8
+    lg:py-10
+  "
+>
+  {/* Paper texture */}
+  <div className="pointer-events-none absolute inset-0 opacity-[0.35] paper-texture" />
 
-        <div
-          className="
-            relative mx-auto flex w-full max-w-7xl
-            flex-col items-center
-            gap-10
-            px-4 py-14
-            sm:px-6 sm:py-20
-            md:gap-12 md:py-24
-            lg:flex-row lg:items-center lg:justify-between
-            lg:gap-16 lg:px-8 lg:py-28
-            xl:py-32
-          "
-        >
-          {/* Hero Text */}
-          <div
-            className="
-              w-full max-w-2xl
-              text-center
-              lg:max-w-xl lg:text-left
-            "
-          >
-            <span
-              className="
-                inline-block max-w-full
-                rounded-full
-                border border-brassLight/40
-                px-3 py-1.5
-                font-mono text-[0.58rem]
-                uppercase tracking-[0.12em]
-                leading-relaxed
-                text-brassLight
-                sm:text-[0.65rem]
-                sm:tracking-[0.14em]
-              "
-            >
-              A field guide for things you can&rsquo;t name yet
-            </span>
+  {/* Very subtle grid */}
+  <div
+    className="pointer-events-none absolute inset-0 opacity-[0.025]"
+    style={{
+      backgroundImage:
+        'linear-gradient(#1F3B33 1px, transparent 1px), linear-gradient(90deg, #1F3B33 1px, transparent 1px)',
+      backgroundSize: '42px 42px',
+    }}
+  />
 
-            <h1
-              className="
-                mt-5
-                font-display
-                text-[2.15rem]
-                font-semibold
-                leading-[1.08]
-                tracking-tight
-                text-paper
-                sm:text-4xl
-                md:text-5xl
-                lg:text-[3.4rem]
-              "
-            >
-              You saw it once.
-              <br />
-              <span className="italic text-brassLight">
-                We&rsquo;ll help you find it again.
-              </span>
-            </h1>
+  {/* =====================================================
+      DECORATIVE PRODUCT PHOTO — TOP LEFT
+  ===================================================== */}
+  <div
+    className="
+      pointer-events-none absolute
+      left-[-35px] top-8
+      hidden w-52
+      rotate-[-8deg]
+      rounded-sm bg-white p-2
+      shadow-[0_12px_30px_rgba(0,0,0,0.12)]
+      lg:block
+      xl:left-8
+    "
+  >
+    <div className="aspect-[4/3] overflow-hidden">
+      <img
+        src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=85"
+        alt="Sneakers"
+        className="h-full w-full object-cover"
+      />
+    </div>
+  </div>
 
-            <p
-              className="
-                mx-auto mt-5
-                w-full max-w-md
-                text-[0.92rem]
-                leading-relaxed
-                text-paper/75
-                sm:text-[1.02rem]
-                lg:mx-0
-              "
-            >
-              Tholafind turns a photo into a search across retail, resale,
-              and vintage sources at once and calls in real people
-              when the algorithm runs out of ideas.
-            </p>
-          </div>
+  {/* Top-left handwritten note */}
+  <div
+    className="
+      pointer-events-none absolute
+      left-[18%] top-20
+      hidden
+      rotate-[-8deg]
+      lg:block
+    "
+  >
+    <p className="font-display text-lg italic text-inkSoft">
+      Just a photo...
+    </p>
 
-          {/* Upload */}
-          <div className="w-full max-w-xl lg:max-w-[520px]">
-            <UploadDropzone />
-          </div>
-        </div>
-      </section>
+    <svg
+      width="75"
+      height="45"
+      viewBox="0 0 75 45"
+      className="ml-6"
+    >
+      <path
+        d="M68 5C50 10 36 27 10 38"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M15 29L8 39L21 39"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  </div>
+
+  {/* =====================================================
+      DECORATIVE PRODUCT PHOTO — LEFT
+  ===================================================== */}
+  <div
+    className="
+      pointer-events-none absolute
+      left-[-20px] top-[38%]
+      hidden w-44
+      rotate-[5deg]
+      rounded-sm bg-white p-2
+      shadow-[0_12px_30px_rgba(0,0,0,0.10)]
+      lg:block
+      xl:left-12
+    "
+  >
+    <div className="aspect-[4/3] overflow-hidden">
+      <img
+        src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=700&q=85"
+        alt="Camera"
+        className="h-full w-full object-cover"
+      />
+    </div>
+  </div>
+
+  {/* =====================================================
+      DECORATIVE PRODUCT PHOTO — BOTTOM LEFT
+  ===================================================== */}
+  <div
+    className="
+      pointer-events-none absolute
+      bottom-[-20px] left-[7%]
+      hidden w-40
+      rotate-[-5deg]
+      rounded-sm bg-white p-2
+      shadow-[0_12px_30px_rgba(0,0,0,0.10)]
+      xl:block
+    "
+  >
+    <div className="aspect-[4/3] overflow-hidden">
+      <img
+        src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=700&q=85"
+        alt="Jacket"
+        className="h-full w-full object-cover"
+      />
+    </div>
+  </div>
+
+  {/* =====================================================
+      DECORATIVE PRODUCT PHOTO — TOP RIGHT
+  ===================================================== */}
+  <div
+    className="
+      pointer-events-none absolute
+      right-[-35px] top-10
+      hidden w-52
+      rotate-[7deg]
+      rounded-sm bg-white p-2
+      shadow-[0_12px_30px_rgba(0,0,0,0.12)]
+      lg:block
+      xl:right-8
+    "
+  >
+    <div className="aspect-[4/3] overflow-hidden">
+      <img
+        src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=700&q=85"
+        alt="Chair"
+        className="h-full w-full object-cover"
+      />
+    </div>
+  </div>
+
+  {/* =====================================================
+      RIGHT HANDWRITTEN NOTE
+  ===================================================== */}
+  <div
+    className="
+      pointer-events-none absolute
+      right-[17%] top-[39%]
+      hidden
+      rotate-[5deg]
+      lg:block
+    "
+  >
+    <div className="flex items-start gap-2">
+      <Search
+        size={24}
+        strokeWidth={1.5}
+        className="mt-1 text-brick"
+      />
+
+      <p className="font-display text-lg italic leading-tight text-inkSoft">
+        We search
+        <br />
+        everywhere.
+      </p>
+    </div>
+
+    <svg
+      width="90"
+      height="45"
+      viewBox="0 0 90 45"
+      className="ml-2"
+    >
+      <path
+        d="M8 5C25 15 45 30 82 35"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M72 27L83 35L69 38"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  </div>
+
+  {/* =====================================================
+      DECORATIVE PRODUCT PHOTO — RIGHT
+  ===================================================== */}
+  <div
+    className="
+      pointer-events-none absolute
+      right-[-20px] top-[40%]
+      hidden w-44
+      rotate-[-6deg]
+      rounded-sm bg-white p-2
+      shadow-[0_12px_30px_rgba(0,0,0,0.10)]
+      lg:block
+      xl:right-12
+    "
+  >
+    <div className="aspect-[4/3] overflow-hidden">
+      <img
+        src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=700&q=85"
+        alt="Headphones"
+        className="h-full w-full object-cover"
+      />
+    </div>
+  </div>
+
+  {/* =====================================================
+      MAIN CENTER CONTENT
+  ===================================================== */}
+  <div
+  className="
+    relative z-10
+    mx-auto flex
+    w-full max-w-4xl
+    flex-col items-center
+    justify-center
+    px-5
+    text-center
+    sm:px-8
+  "
+>
+  {/* Brand */}
+  <div className="font-display text-xl font-semibold tracking-[-0.04em] text-pine sm:text-2xl">
+    Tholafind
+  </div>
+
+  {/* Small label */}
+  <div className="mt-1.5 flex items-center gap-2">
+    <span className="h-px w-5 bg-pine/30" />
+    <span className="font-mono text-[0.52rem] uppercase tracking-[0.16em] text-inkSoft">
+      Find the things you can't find
+    </span>
+    <span className="h-px w-5 bg-pine/30" />
+  </div>
+
+  {/* Main heading */}
+  <h1 className="mt-2 font-display text-[2.1rem] font-semibold leading-[1.05] tracking-[-0.04em] text-pine sm:text-4xl md:text-[2.9rem] lg:text-[3.3rem]">
+    Snap it. <span className="italic text-brick">We&rsquo;ll find it.</span>
+  </h1>
+
+  {/* Hand-drawn underline */}
+  <div className="relative mt-1.5">
+    <div className="h-[3px] w-32 rotate-[-1deg] rounded-full bg-brass sm:w-44" />
+    <span className="absolute -right-5 -top-2.5 text-lg text-brass">✦</span>
+  </div>
+
+  {/* Description */}
+  <p className="mt-2.5 max-w-lg text-[0.72rem] leading-5 text-inkSoft sm:text-[0.8rem] sm:leading-5 md:text-[0.85rem]">
+    Upload a photo of anything you can&rsquo;t find, and we&rsquo;ll search retail, marketplaces
+    and resale — with real people ready to help when the trail goes cold.
+  </p>
+
+  {/* CENTERED UPLOAD */}
+  <div className="relative mt-3 w-full max-w-lg sm:mt-4">
+    <UploadDropzone />
+  </div>
+
+  {/* SEARCH SOURCES */}
+  <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 sm:mt-4 sm:gap-x-6">
+    <div className="flex items-center gap-1.5 text-pine">
+      <Tag size={13} strokeWidth={1.5} />
+      <span className="font-mono text-[0.54rem] uppercase tracking-[0.08em]">Retail</span>
+    </div>
+    <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+    <div className="flex items-center gap-1.5 text-pine">
+      <ShoppingBag size={13} strokeWidth={1.5} />
+      <span className="font-mono text-[0.54rem] uppercase tracking-[0.08em]">Marketplaces</span>
+    </div>
+    <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+    <div className="flex items-center gap-1.5 text-pine">
+      <RefreshCw size={13} strokeWidth={1.5} />
+      <span className="font-mono text-[0.54rem] uppercase tracking-[0.08em]">Resale</span>
+    </div>
+    <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+    <div className="flex items-center gap-1.5 text-pine">
+      <Users size={13} strokeWidth={1.5} />
+      <span className="font-mono text-[0.54rem] uppercase tracking-[0.08em]">Finders</span>
+    </div>
+  </div>
+</div>
+
+  {/* =====================================================
+      BOTTOM RIGHT DARK PAPER SHAPE
+  ===================================================== */}
+  <div
+    className="
+      pointer-events-none absolute
+      -bottom-20 -right-20
+      hidden
+      h-40 w-80
+      rotate-[-5deg]
+      bg-pine
+      lg:block
+    "
+  />
+
+  <div
+    className="
+      pointer-events-none absolute
+      bottom-5 right-10
+      hidden
+      rotate-[-5deg]
+      lg:block
+    "
+  >
+    <p className="font-display text-base italic text-paper">
+      Real people.
+      <br />
+      Real finds.
+    </p>
+
+    <div className="mt-1 h-[3px] w-20 rotate-[-2deg] bg-brass" />
+  </div>
+</section>
 
       {/* =========================================================
           HOW IT WORKS

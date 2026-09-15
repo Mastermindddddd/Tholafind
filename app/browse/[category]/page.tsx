@@ -119,7 +119,7 @@ export default async function BrowseCategoryPage({ params }: PageProps) {
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
         {findResults.length === 0 ? (
           <p className="py-16 text-center text-[0.9rem] text-inkSoft">
-            No {copy.label.toLowerCase()} finds logged yet &mdash; check back soon.
+            No {copy.label.toLowerCase()} finds logged yet - check back soon.
           </p>
         ) : (
           <div className="masonry">

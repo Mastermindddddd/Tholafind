@@ -16,9 +16,9 @@ import { Compass } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Browse real finds — Tholafind',
+  title: 'Browse real finds - Tholafind',
   description:
-    'Browse real items other people have tracked down on Tholafind — retail, resale, and vintage finds, sorted by how confidently they were matched.',
+    'Browse real items other people have tracked down on Tholafind - retail, resale, and vintage finds, sorted by how confidently they were matched.',
 };
 
 const categories = [
@@ -53,7 +53,7 @@ export default async function BrowsePage() {
           Real things, actually found.
         </h1>
         <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
-          Every card here is a genuine match from someone else&rsquo;s hunt &mdash; not a demo, not
+          Every card here is a genuine match from someone else&rsquo;s hunt - not a demo, not
           a mockup. Tap the heart on anything to save it to your own collection.
         </p>
 
@@ -81,7 +81,7 @@ export default async function BrowsePage() {
               <Compass size={20} />
             </span>
             <p className="text-[0.9rem] text-inkSoft">
-              Nothing to show yet &mdash; check back once a few hunts have wrapped up.
+              Nothing to show yet - check back once a few hunts have wrapped up.
             </p>
           </div>
         ) : (
