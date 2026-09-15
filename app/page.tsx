@@ -406,205 +406,102 @@ export default function HomePage() {
       {/* =========================================================
           HOW IT WORKS
       ========================================================= */}
-      <section
-        className="
-          mx-auto w-full max-w-7xl
-          px-4 py-14
-          sm:px-6 sm:py-20
-          lg:px-8 lg:py-24
-        "
+      <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+  <div className="mb-9 max-w-xl sm:mb-12">
+    <div className="flex items-center gap-2">
+      {/*<span className="h-px w-5 bg-brick/40" />*/}
+      <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-brick sm:text-[0.7rem]">
+        How a hunt works
+      </p>
+    </div>
+
+    <h2 className="mt-3 font-display text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
+      Three steps.{' '}
+      <span className="relative italic text-pine">
+        No dead ends.
+        <span className="absolute -right-5 -top-3 text-sm text-brass sm:text-base">✦</span>
+      </span>
+    </h2>
+  </div>
+
+  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+    {steps.map((s, i) => (
+      <div
+        key={s.tag}
+        className={`
+          relative rounded-md border border-line bg-card p-5 shadow-card sm:p-6
+          ${i % 2 === 0 ? 'rotate-[-0.6deg]' : 'rotate-[0.6deg]'}
+          transition-transform hover:rotate-0
+        `}
       >
-        <div className="mb-9 max-w-xl sm:mb-12">
-          <p
-            className="
-              font-mono text-[0.62rem]
-              uppercase tracking-[0.14em]
-              text-brick
-              sm:text-[0.7rem]
-            "
-          >
-            How a hunt works
-          </p>
+        
 
-          <h2
-            className="
-              mt-3
-              font-display
-              text-2xl
-              font-semibold
-              leading-tight
-              tracking-tight
-              text-ink
-              sm:text-3xl
-            "
-          >
-            Three steps. No dead ends.
-          </h2>
-        </div>
+        <p className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-brass sm:text-[0.65rem]">
+          {s.tag}
+        </p>
 
-        <div
-          className="
-            grid grid-cols-1 gap-5
-            md:grid-cols-2
-            lg:grid-cols-3 lg:gap-8
-          "
-        >
-          {steps.map((s) => (
-            <div
-              key={s.tag}
-              className="
-                rounded-md
-                border border-line
-                bg-card
-                p-5
-                shadow-card
-                sm:p-6
-              "
-            >
-              <p
-                className="
-                  font-mono
-                  text-[0.6rem]
-                  uppercase
-                  tracking-[0.12em]
-                  text-brass
-                  sm:text-[0.65rem]
-                "
-              >
-                {s.tag}
-              </p>
+        <h3 className="mt-3 font-display text-lg font-semibold leading-tight text-ink sm:text-xl">
+          {s.title}
+        </h3>
 
-              <h3
-                className="
-                  mt-3
-                  font-display
-                  text-lg
-                  font-semibold
-                  leading-tight
-                  text-ink
-                  sm:text-xl
-                "
-              >
-                {s.title}
-              </h3>
-
-              <p
-                className="
-                  mt-2.5
-                  text-[0.84rem]
-                  leading-relaxed
-                  text-inkSoft
-                  sm:text-[0.9rem]
-                "
-              >
-                {s.body}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+        <p className="mt-2.5 text-[0.84rem] leading-relaxed text-inkSoft sm:text-[0.9rem]">
+          {s.body}
+        </p>
+      </div>
+    ))}
+  </div>
+</section>
 
       {/* =========================================================
           FEATURES
       ========================================================= */}
       <section className="w-full bg-paperDim py-14 sm:py-20 lg:py-24">
+  <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="mb-9 flex max-w-xl flex-col gap-1 sm:mb-12">
+      <div className="flex items-center gap-2">
+        <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-brick sm:text-[0.7rem]">
+          Why not just use Lens
+        </p>
+      </div>
+
+      <h2 className="mt-2 font-display text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
+        Built for the searches that come up empty everywhere else.
+      </h2>
+
+      <p className="mt-1 font-display text-sm italic text-inkSoft sm:text-base">
+        We&rsquo;ve been there too.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+      {features.map((f, i) => (
         <div
-          className="
-            mx-auto w-full max-w-7xl
-            px-4
-            sm:px-6
-            lg:px-8
-          "
+          key={f.title}
+          className={`
+            group relative overflow-hidden rounded-md border border-line bg-card p-5 sm:p-6
+            ${i % 2 === 0 ? '-rotate-[0.4deg]' : 'rotate-[0.4deg]'}
+            transition-all hover:-translate-y-0.5 hover:rotate-0 hover:shadow-card
+          `}
         >
-          <div className="mb-9 max-w-xl sm:mb-12">
-            <p
-              className="
-                font-mono text-[0.62rem]
-                uppercase tracking-[0.14em]
-                text-brick
-                sm:text-[0.7rem]
-              "
-            >
-              Why not just use Lens
-            </p>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-pine text-brassLight">
+            <f.icon size={16} />
+          </span>
 
-            <h2
-              className="
-                mt-3
-                font-display
-                text-2xl
-                font-semibold
-                leading-tight
-                tracking-tight
-                text-ink
-                sm:text-3xl
-              "
-            >
-              Built for the searches that come up empty everywhere else.
-            </h2>
-          </div>
+          <h3 className="mt-4 font-display text-base font-semibold leading-tight text-ink sm:text-[1.05rem]">
+            {f.title}
+          </h3>
 
-          <div
-            className="
-              grid grid-cols-1 gap-5
-              sm:grid-cols-2
-              lg:grid-cols-4 lg:gap-6
-            "
-          >
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="
-                  rounded-md
-                  border border-line
-                  bg-card
-                  p-5
-                  sm:p-6
-                "
-              >
-                <span
-                  className="
-                    flex h-9 w-9
-                    items-center justify-center
-                    rounded-full
-                    bg-pine
-                    text-brassLight
-                  "
-                >
-                  <f.icon size={16} />
-                </span>
+          <p className="mt-2 text-[0.82rem] leading-relaxed text-inkSoft sm:text-[0.85rem]">
+            {f.body}
+          </p>
 
-                <h3
-                  className="
-                    mt-4
-                    font-display
-                    text-base
-                    font-semibold
-                    leading-tight
-                    text-ink
-                    sm:text-[1.05rem]
-                  "
-                >
-                  {f.title}
-                </h3>
-
-                <p
-                  className="
-                    mt-2
-                    text-[0.82rem]
-                    leading-relaxed
-                    text-inkSoft
-                    sm:text-[0.85rem]
-                  "
-                >
-                  {f.body}
-                </p>
-              </div>
-            ))}
-          </div>
+          {/* subtle corner fold, like a worn card */}
+          <span className="pointer-events-none absolute bottom-0 right-0 h-5 w-5 bg-paperDim [clip-path:polygon(100%_0,100%_100%,0_100%)]" />
         </div>
-      </section>
-
+      ))}
+    </div>
+  </div>
+</section>
 {/* =========================================================
     MOBILE APP — COMING SOON
 ========================================================= */}
@@ -661,46 +558,18 @@ export default function HomePage() {
       >
         {/* Text */}
         <div className="w-full max-w-2xl">
-          <span
-            className="
-              inline-flex
-              items-center
-              rounded-full
-              border border-brassLight/30
-              bg-brassLight/5
-              px-3 py-1.5
-              font-mono
-              text-[0.58rem]
-              uppercase
-              tracking-[0.12em]
-              text-brassLight
-              sm:text-[0.65rem]
-              sm:tracking-[0.14em]
-            "
-          >
-            Coming soon
-          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-brassLight/30 bg-brassLight/5 px-3 py-1.5 font-mono text-[0.58rem] uppercase tracking-[0.12em] text-brassLight sm:text-[0.65rem] sm:tracking-[0.14em]">
+  <span className="text-brassLight">✦</span> Coming soon
+</span>
 
-          <h2
-            className="
-              mt-4
-              font-display
-              text-2xl
-              font-semibold
-              leading-tight
-              tracking-tight
-              text-paper
-              sm:text-3xl
-              md:text-4xl
-              lg:text-[2.7rem]
-            "
-          >
-            Your next hunt,
-            <br className="hidden sm:block" />
-            <span className="italic text-brassLight">
-              in your pocket.
-            </span>
-          </h2>
+<h2 className="mt-4 font-display text-2xl font-semibold leading-tight tracking-tight text-paper sm:text-3xl md:text-4xl lg:text-[2.7rem]">
+  Your next hunt,
+  <br className="hidden sm:block" />
+  <span className="relative italic text-brassLight">
+    in your pocket.
+    <span className="absolute -bottom-1 left-0 h-[2px] w-full rotate-[-1deg] rounded-full bg-brassLight/50" />
+  </span>
+</h2>
 
           <p
             className="
@@ -844,214 +713,65 @@ export default function HomePage() {
       {/* =========================================================
           PRICING
       ========================================================= */}
-      <section
-        className="
-          mx-auto w-full max-w-7xl
-          px-4 py-14
-          sm:px-6 sm:py-20
-          lg:px-8 lg:py-24
-        "
-      >
-        <div
-          className="
-            grid
-            grid-cols-1
-            gap-8
-            rounded-lg
-            border border-line
-            bg-card
-            p-5
-            shadow-card
-            sm:gap-10 sm:p-8
-            md:p-10
-            lg:grid-cols-[1.1fr_1fr]
-            lg:items-center
-            lg:p-12
-          "
-        >
-          {/* Pricing Description */}
-          <div>
-            <span
-              className="
-                inline-flex
-                max-w-full
-                items-center
-                gap-1.5
-                rounded-full
-                bg-paperDim
-                px-3 py-1
-                font-mono
-                text-[0.58rem]
-                uppercase
-                tracking-[0.1em]
-                text-inkSoft
-                sm:text-[0.65rem]
-                sm:tracking-[0.12em]
-              "
-            >
-              <ShieldCheck size={13} />
-              No surprise paywalls
-            </span>
+      <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+  <div className="grid grid-cols-1 gap-8 rounded-lg border border-line bg-card p-5 shadow-card sm:gap-10 sm:p-8 md:p-10 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:p-12">
+    <div>
+      <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-paperDim px-3 py-1 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-inkSoft sm:text-[0.65rem] sm:tracking-[0.12em]">
+        <ShieldCheck size={13} />
+        No surprise paywalls
+      </span>
 
-            <h2
-              className="
-                mt-4
-                font-display
-                text-2xl
-                font-semibold
-                leading-tight
-                tracking-tight
-                text-ink
-                sm:text-3xl
-              "
-            >
-              You see a real result before we ever ask for a card.
-            </h2>
+      <h2 className="mt-4 font-display text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
+        You see a real result before we ever ask for a card.
+      </h2>
 
-            <p
-              className="
-                mt-3
-                max-w-lg
-                text-[0.85rem]
-                leading-relaxed
-                text-inkSoft
-                sm:text-[0.92rem]
-              "
-            >
-              Every hunt starts free, and free means a real search across
-              retail, resale, and vintage - not a locked screen after
-              your first upload. Search itself is unlimited on every plan.
-              Plus removes the limits that exist on Free: how many
-              collections you can keep, how many times a month you can ask
-              the community for help, and how many hunts you can watch for
-              updates at once.
-            </p>
-          </div>
+      <p className="mt-3 max-w-lg text-[0.85rem] leading-relaxed text-inkSoft sm:text-[0.92rem]">
+        Every hunt starts free, and free means a real search across retail, resale, and vintage
+        - not a locked screen after your first upload. Search itself is unlimited on every plan.
+      </p>
 
-          {/* Pricing Cards */}
-          <div
-            className="
-              grid
-              grid-cols-1
-              gap-4
-              sm:grid-cols-2
-            "
-          >
-            {/* Free */}
-            <div
-              className="
-                rounded-md
-                border border-line
-                bg-paper
-                p-5
-              "
-            >
-              <p
-                className="
-                  font-mono
-                  text-[0.6rem]
-                  uppercase
-                  tracking-[0.12em]
-                  text-inkSoft
-                "
-              >
-                Free
-              </p>
+      <p className="mt-2 font-display text-sm italic text-brick sm:text-base">
+        Plus just removes the limits.
+      </p>
+    </div>
 
-              <p
-                className="
-                  mt-2
-                  font-display
-                  text-2xl
-                  font-semibold
-                  text-ink
-                "
-              >
-                $0
-              </p>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {/* Free */}
+      <div className="relative rotate-[-0.5deg] rounded-md border border-line bg-paper p-5 transition-transform hover:rotate-0">
+        <p className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-inkSoft">Free</p>
+        <p className="mt-2 font-display text-2xl font-semibold text-ink">$0</p>
 
-              <ul
-                className="
-                  mt-4
-                  space-y-2
-                  text-[0.8rem]
-                  leading-relaxed
-                  text-inkSoft
-                  sm:text-[0.82rem]
-                "
-              >
-                <li>Unlimited photo searches</li>
-                <li>Retail, resale &amp; vintage results</li>
-                <li>3 collections</li>
-                <li>2 community requests / month</li>
-                <li>Watch 1 hunt for updates</li>
-              </ul>
-            </div>
+        <ul className="mt-4 space-y-2 text-[0.8rem] leading-relaxed text-inkSoft sm:text-[0.82rem]">
+          <li>Unlimited photo searches</li>
+          <li>Retail, resale &amp; vintage results</li>
+          <li>3 collections</li>
+          <li>2 community requests / month</li>
+          <li>Watch 1 hunt for updates</li>
+        </ul>
+      </div>
 
-            {/* Plus */}
-            <div
-              className="
-                rounded-md
-                border border-brass
-                bg-paper
-                p-5
-              "
-            >
-              <p
-                className="
-                  font-mono
-                  text-[0.6rem]
-                  uppercase
-                  tracking-[0.12em]
-                  text-brick
-                "
-              >
-                Plus
-              </p>
+      {/* Plus */}
+      <div className="relative rotate-[0.5deg] rounded-md border border-brass bg-paper p-5 transition-transform hover:rotate-0">
+        <span className="absolute -top-2.5 -right-2 text-base text-brass">✦</span>
 
-              <p
-                className="
-                  mt-2
-                  font-display
-                  text-2xl
-                  font-semibold
-                  text-ink
-                "
-              >
-                $5
-                <span
-                  className="
-                    text-sm
-                    font-normal
-                    text-inkSoft
-                  "
-                >
-                  /mo
-                </span>
-              </p>
+        <p className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-brick">Plus</p>
+        <p className="mt-2 font-display text-2xl font-semibold text-ink">
+          $5<span className="text-sm font-normal text-inkSoft">/mo</span>
+        </p>
 
-              <ul
-                className="
-                  mt-4
-                  space-y-2
-                  text-[0.8rem]
-                  leading-relaxed
-                  text-inkSoft
-                  sm:text-[0.82rem]
-                "
-              >
-                <li>Unlimited collections</li>
-                <li>Unlimited community requests</li>
-                <li>Watch unlimited hunts for updates</li>
-              </ul>
+        <ul className="mt-4 space-y-2 text-[0.8rem] leading-relaxed text-inkSoft sm:text-[0.82rem]">
+          <li>Unlimited collections</li>
+          <li>Unlimited community requests</li>
+          <li>Watch unlimited hunts for updates</li>
+        </ul>
 
-              <div className="mt-4">
-                <UpgradeButton label="Get Plus" />
-              </div>
-            </div>
-          </div>
+        <div className="mt-4">
+          <UpgradeButton label="Get Plus" />
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
 
       <Footer />
     </div>

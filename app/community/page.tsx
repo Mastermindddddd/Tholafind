@@ -50,60 +50,76 @@ export default async function CommunityFeedPage() {
       <Navbar />
 
       <section className="mx-auto max-w-7xl px-5 pt-10 sm:px-8">
-        <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">
-          The finders
-        </p>
-        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-          Someone else&rsquo;s hunt might be one you can crack.
-        </h1>
-        <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
-          These are searches the algorithm couldn&rsquo;t confidently place. A tag close-up, a
-          fabric guess, a &ldquo;that&rsquo;s from an old IKEA line&rdquo; &mdash; that&rsquo;s usually all it takes.
-        </p>
-      </section>
+  <div className="flex items-center gap-2">
+    <span className="h-px w-5 bg-brick/40" />
+    <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">
+      The finders
+    </p>
+  </div>
+
+  <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+    Someone else&rsquo;s hunt might be{' '}
+    <span className="relative italic text-pine">
+      one you can crack.
+      <span className="absolute -right-5 -top-3 text-base text-brass">✦</span>
+    </span>
+  </h1>
+
+  <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
+    These are searches the algorithm couldn&rsquo;t confidently place. A tag close-up, a
+    fabric guess, a &ldquo;that&rsquo;s from an old IKEA line&rdquo; &mdash; that&rsquo;s usually all it takes.
+  </p>
+</section>
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
-        {feed.length === 0 ? (
-          <p className="text-[0.88rem] text-inkSoft">
-            No open requests right now &mdash; check back soon.
-          </p>
-        ) : (
-          <div className="masonry">
-            {feed.map((r) => (
-              <Link
-                key={r.id}
-                href={`/community/${r.id}`}
-                className="group relative block overflow-hidden rounded-[6px] border border-line/70 bg-card shadow-card transition-shadow duration-300 hover:shadow-cardHover"
-              >
-                <div className="relative aspect-square w-full overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={r.photo}
-                    alt={`Hunt ${r.reference}`}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                </div>
-                <div className="p-3.5">
-                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.08em] text-brick">
-                    #{r.reference}
-                  </p>
-                  {r.hint && (
-                    <p className="mt-1 font-display text-[0.95rem] leading-snug text-ink">
-                      {r.hint}
-                    </p>
-                  )}
-                  <div className="mt-2.5 flex items-center justify-between border-t border-dashed border-line pt-2.5 text-[0.75rem] text-inkSoft">
-                    <span className="flex items-center gap-1">
-                      <Users size={12} /> {r.answerCount} {r.answerCount === 1 ? 'answer' : 'answers'}
-                    </span>
-                    <span>{formatRelativeTime(r.createdAt)}</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
+  {feed.length === 0 ? (
+    <div className="rounded-md border border-dashed border-line bg-paperDim/50 py-16 text-center">
+      <p className="text-[0.88rem] text-inkSoft">
+        No open requests right now &mdash; check back soon.
+      </p>
+    </div>
+  ) : (
+    <div className="masonry">
+      {feed.map((r, i) => (
+        <Link
+          key={r.id}
+          href={`/community/${r.id}`}
+          className={`group relative block overflow-hidden rounded-[6px] border border-line/70 bg-card shadow-card transition-all duration-300 hover:shadow-cardHover hover:rotate-0 hover:z-10 ${
+            i % 3 === 0 ? 'rotate-[-0.4deg]' : i % 3 === 1 ? 'rotate-[0.4deg]' : ''
+          }`}
+        >
+          <div className="relative aspect-square w-full overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={r.photo}
+              alt={`Hunt ${r.reference}`}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            />
+            <span className="absolute left-2 top-2 rounded-full bg-ink/70 px-2 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.1em] text-paper">
+              Open case
+            </span>
           </div>
-        )}
-      </section>
+          <div className="p-3.5">
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.08em] text-brick">
+              #{r.reference}
+            </p>
+            {r.hint && (
+              <p className="mt-1 font-display text-[0.95rem] leading-snug text-ink">
+                {r.hint}
+              </p>
+            )}
+            <div className="mt-2.5 flex items-center justify-between border-t border-dashed border-line pt-2.5 text-[0.75rem] text-inkSoft">
+              <span className="flex items-center gap-1">
+                <Users size={12} /> {r.answerCount} {r.answerCount === 1 ? 'answer' : 'answers'}
+              </span>
+              <span>{formatRelativeTime(r.createdAt)}</span>
+            </div>
+          </div>
+        </Link>
+      ))}
+    </div>
+  )}
+</section>
 
       <Footer />
     </div>

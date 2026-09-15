@@ -91,44 +91,57 @@ export default async function BrowseCategoryPage({ params }: PageProps) {
       <Navbar />
 
       <section className="mx-auto max-w-7xl px-5 pt-10 sm:px-8">
-        <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">
-          {copy.eyebrow}
-        </p>
-        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-          {copy.title}
-        </h1>
-        <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">{copy.body}</p>
+  <div className="flex items-center gap-2">
+    <span className="h-px w-5 bg-brick/40" />
+    <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">
+      {copy.eyebrow}
+    </p>
+  </div>
 
-        <nav className="mt-6 flex flex-wrap gap-2">
-          {categories.map((c) => (
-            <Link
-              key={c.href}
-              href={c.href}
-              className={`rounded-full border px-3.5 py-1.5 font-mono text-[0.68rem] uppercase tracking-[0.1em] transition-colors ${
-                c.href === `/browse/${category}`
-                  ? 'border-pine bg-pine text-paper'
-                  : 'border-line bg-card text-inkSoft hover:border-inkSoft'
-              }`}
-            >
-              {c.label}
-            </Link>
-          ))}
-        </nav>
-      </section>
+  <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+    {copy.title}
+  </h1>
+  <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">{copy.body}</p>
+
+  <nav className="mt-6 flex flex-wrap gap-2">
+    {categories.map((c) => (
+      <Link
+        key={c.href}
+        href={c.href}
+        className={`rounded-full border px-3.5 py-1.5 font-mono text-[0.68rem] uppercase tracking-[0.1em] transition-colors ${
+          c.href === `/browse/${category}`
+            ? 'border-pine bg-pine text-paper'
+            : 'border-line bg-card text-inkSoft hover:border-inkSoft'
+        }`}
+      >
+        {c.label}
+      </Link>
+    ))}
+  </nav>
+</section>
 
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
-        {findResults.length === 0 ? (
-          <p className="py-16 text-center text-[0.9rem] text-inkSoft">
-            No {copy.label.toLowerCase()} finds logged yet - check back soon.
-          </p>
-        ) : (
-          <div className="masonry">
-            {findResults.map((item) => (
-              <ResultCard key={item.id} item={item} />
-            ))}
-          </div>
-        )}
-      </section>
+  {findResults.length === 0 ? (
+    <div className="rounded-md border border-dashed border-line bg-paperDim/50 py-16 text-center">
+      <p className="text-[0.9rem] text-inkSoft">
+        No {copy.label.toLowerCase()} finds logged yet - check back soon.
+      </p>
+    </div>
+  ) : (
+    <div className="masonry">
+      {findResults.map((item, i) => (
+        <div
+          key={item.id}
+          className={`transition-transform hover:rotate-0 hover:z-10 ${
+            i % 3 === 0 ? 'rotate-[-0.4deg]' : i % 3 === 1 ? 'rotate-[0.4deg]' : ''
+          }`}
+        >
+          <ResultCard item={item} />
+        </div>
+      ))}
+    </div>
+  )}
+</section>
 
       <Footer />
     </div>
