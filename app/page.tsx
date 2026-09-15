@@ -64,9 +64,6 @@ export default function HomePage() {
       {/* =========================================================
           HERO
       ========================================================= */}
-      {/* =========================================================
-    HERO
-========================================================= */}
 <section
   className="
     relative
@@ -94,7 +91,7 @@ export default function HomePage() {
   {/* =====================================================
       DECORATIVE PRODUCT PHOTO — TOP LEFT
   ===================================================== */}
- {/* DECORATIVE PRODUCT PHOTO — TOP LEFT */}
+
 <div
   className="
     pointer-events-none absolute
@@ -141,76 +138,79 @@ export default function HomePage() {
     </svg>
   </div>
 
-  {/* =====================================================
-      DECORATIVE PRODUCT PHOTO — LEFT
-  ===================================================== */}
-  <div
-    className="
-      pointer-events-none absolute
-      left-[-20px] top-[38%]
-      hidden w-44
-      rotate-[5deg]
-      rounded-sm bg-white p-2
-      shadow-[0_12px_30px_rgba(0,0,0,0.10)]
-      lg:block
-      xl:left-12
-    "
-  >
-    <div className="aspect-[4/3] overflow-hidden">
-      <img
-        src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=700&q=85"
-        alt="Camera"
-        className="h-full w-full object-cover"
-      />
-    </div>
+  {/* DECORATIVE PRODUCT PHOTO — LEFT */}
+<div
+  className="
+    pointer-events-none absolute
+    left-[-14px] top-[40%]
+    w-14
+    rotate-[5deg]
+    rounded-sm bg-white p-1
+    shadow-[0_6px_14px_rgba(0,0,0,0.10)]
+    sm:left-[-18px] sm:w-20 sm:p-1.5
+    lg:left-[-20px] lg:w-44 lg:p-2
+    lg:shadow-[0_12px_30px_rgba(0,0,0,0.10)]
+    xl:left-12
+  "
+>
+  <div className="aspect-[4/3] overflow-hidden">
+    <img
+      src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=700&q=85"
+      alt="Camera"
+      className="h-full w-full object-cover"
+    />
   </div>
+</div>
 
-  {/* =====================================================
-      DECORATIVE PRODUCT PHOTO — BOTTOM LEFT
-  ===================================================== */}
-  <div
-    className="
-      pointer-events-none absolute
-      bottom-[-20px] left-[7%]
-      hidden w-40
-      rotate-[-5deg]
-      rounded-sm bg-white p-2
-      shadow-[0_12px_30px_rgba(0,0,0,0.10)]
-      xl:block
-    "
-  >
-    <div className="aspect-[4/3] overflow-hidden">
-      <img
-        src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=700&q=85"
-        alt="Jacket"
-        className="h-full w-full object-cover"
-      />
-    </div>
+  {/* DECORATIVE PRODUCT PHOTO — BOTTOM LEFT */}
+<div
+  className="
+    pointer-events-none absolute
+    bottom-2 left-[3%]
+    w-12
+    rotate-[-5deg]
+    rounded-sm bg-white p-1
+    shadow-[0_6px_14px_rgba(0,0,0,0.10)]
+    sm:w-16 sm:p-1.5
+    xl:bottom-[-20px] xl:left-[7%] xl:w-40 xl:p-2
+    xl:shadow-[0_12px_30px_rgba(0,0,0,0.10)]
+  "
+>
+  <div className="aspect-[4/3] overflow-hidden">
+    <img
+      src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=700&q=85"
+      alt="Jacket"
+      className="h-full w-full object-cover"
+    />
   </div>
+</div>
 
   {/* =====================================================
       DECORATIVE PRODUCT PHOTO — TOP RIGHT
   ===================================================== */}
-  <div
-    className="
-      pointer-events-none absolute
-      right-[-35px] top-10
-      hidden w-52
-      rotate-[7deg]
-      rounded-sm bg-white p-2
-      shadow-[0_12px_30px_rgba(0,0,0,0.12)]
-      lg:block
-      xl:right-8
-    "
-  >
-    <div className="aspect-[4/3] overflow-hidden">
-      <img
-        src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=700&q=85"
-        alt="Chair"
-        className="h-full w-full object-cover"
-      />
-    </div>
+
+<div
+  className="
+    pointer-events-none absolute
+    right-[-14px] top-3
+    w-14
+    rotate-[7deg]
+    rounded-sm bg-white p-1
+    shadow-[0_6px_14px_rgba(0,0,0,0.12)]
+    sm:right-[-18px] sm:top-5 sm:w-20 sm:p-1.5
+    lg:right-[-35px] lg:top-10 lg:w-52 lg:p-2
+    lg:shadow-[0_12px_30px_rgba(0,0,0,0.12)]
+    xl:right-8
+  "
+>
+  <div className="aspect-[4/3] overflow-hidden">
+    <img
+      src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=700&q=85"
+      alt="Chair"
+      className="h-full w-full object-cover"
+    />
   </div>
+</div>
 
   {/* =====================================================
       RIGHT HANDWRITTEN NOTE
@@ -265,26 +265,29 @@ export default function HomePage() {
   {/* =====================================================
       DECORATIVE PRODUCT PHOTO — RIGHT
   ===================================================== */}
-  <div
-    className="
-      pointer-events-none absolute
-      right-[-20px] top-[40%]
-      hidden w-44
-      rotate-[-6deg]
-      rounded-sm bg-white p-2
-      shadow-[0_12px_30px_rgba(0,0,0,0.10)]
-      lg:block
-      xl:right-12
-    "
-  >
-    <div className="aspect-[4/3] overflow-hidden">
-      <img
-        src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=700&q=85"
-        alt="Headphones"
-        className="h-full w-full object-cover"
-      />
-    </div>
+  {/* DECORATIVE PRODUCT PHOTO — RIGHT */}
+<div
+  className="
+    pointer-events-none absolute
+    right-[-14px] top-[40%]
+    w-14
+    rotate-[-6deg]
+    rounded-sm bg-white p-1
+    shadow-[0_6px_14px_rgba(0,0,0,0.10)]
+    sm:right-[-18px] sm:w-20 sm:p-1.5
+    lg:right-[-20px] lg:w-44 lg:p-2
+    lg:shadow-[0_12px_30px_rgba(0,0,0,0.10)]
+    xl:right-12
+  "
+>
+  <div className="aspect-[4/3] overflow-hidden">
+    <img
+      src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=700&q=85"
+      alt="Headphones"
+      className="h-full w-full object-cover"
+    />
   </div>
+</div>
 
   {/* =====================================================
       MAIN CENTER CONTENT
