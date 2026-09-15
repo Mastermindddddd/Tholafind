@@ -93,7 +93,6 @@ export default async function CollectionsPage() {
 
       <section className="mx-auto max-w-7xl px-5 pt-10 sm:px-8">
   <div className="flex items-center gap-2">
-    <span className="h-px w-5 bg-brick/40" />
     <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">
       {user.name ? `${user.name}\u2019s hunts` : 'Your hunts'}
     </p>

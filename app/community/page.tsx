@@ -51,7 +51,6 @@ export default async function CommunityFeedPage() {
 
       <section className="mx-auto max-w-7xl px-5 pt-10 sm:px-8">
   <div className="flex items-center gap-2">
-    <span className="h-px w-5 bg-brick/40" />
     <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">
       The finders
     </p>
@@ -67,7 +66,7 @@ export default async function CommunityFeedPage() {
 
   <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
     These are searches the algorithm couldn&rsquo;t confidently place. A tag close-up, a
-    fabric guess, a &ldquo;that&rsquo;s from an old IKEA line&rdquo; &mdash; that&rsquo;s usually all it takes.
+    fabric guess, a &ldquo;that&rsquo;s from an old IKEA line&rdquo; - that&rsquo;s usually all it takes.
   </p>
 </section>
 
@@ -75,7 +74,7 @@ export default async function CommunityFeedPage() {
   {feed.length === 0 ? (
     <div className="rounded-md border border-dashed border-line bg-paperDim/50 py-16 text-center">
       <p className="text-[0.88rem] text-inkSoft">
-        No open requests right now &mdash; check back soon.
+        No open requests right now - check back soon.
       </p>
     </div>
   ) : (

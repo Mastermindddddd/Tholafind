@@ -338,7 +338,7 @@ export default function HomePage() {
   </div>
 
   {/* SEARCH SOURCES */}
-  <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:mt-4 sm:gap-x-6">
+  {/*<div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:mt-4 sm:gap-x-6">
   <div className="flex items-center gap-1 text-pine sm:gap-1.5">
     <Tag size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
     <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
@@ -366,7 +366,7 @@ export default function HomePage() {
       Finders
     </span>
   </div>
-</div>
+</div>*/}
 </div>
 
   {/* =====================================================

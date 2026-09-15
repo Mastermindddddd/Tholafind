@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, Upload, ScanLine, AlertCircle } from 'lucide-react';
+import { Camera, Upload, ScanLine, AlertCircle, Tag, ShoppingBag, RefreshCw, Users } from 'lucide-react';
 
 type Phase = 'idle' | 'scanning' | 'error';
 
@@ -174,21 +174,21 @@ export default function UploadDropzone() {
                 </button>
               )}
 
-              <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-                <button
-                  onClick={() => inputRef.current?.click()}
-                  className="flex items-center justify-center gap-1.5 rounded-full bg-pine px-4 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-paper transition-colors hover:bg-pineDeep"
-                >
-                  <Upload size={12} /> Choose a photo
-                </button>
+              <div className="mt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 sm:mt-1 sm:gap-x-4">
+  <button
+    onClick={() => inputRef.current?.click()}
+    className="flex items-center justify-center gap-1.5 rounded-full bg-pine px-3.5 py-1.5 font-mono text-[0.58rem] uppercase tracking-[0.08em] text-paper transition-colors hover:bg-pineDeep sm:px-4 sm:text-[0.62rem] sm:tracking-[0.1em]"
+  >
+    <Upload size={11} className="sm:h-3 sm:w-3" /> Choose a photo
+  </button>
 
-                <button
-                  onClick={handleDemo}
-                  className="font-mono text-[0.6rem] uppercase tracking-[0.08em] text-inkSoft underline decoration-dotted underline-offset-4 hover:text-brick"
-                >
-                  Try a sample hunt
-                </button>
-              </div>
+  <button
+    onClick={handleDemo}
+    className="font-mono text-[0.58rem] uppercase tracking-[0.06em] text-inkSoft underline decoration-dotted underline-offset-4 hover:text-brick sm:text-[0.6rem] sm:tracking-[0.08em]"
+  >
+    Try a sample hunt
+  </button>
+</div>
             </div>
 
             <input
@@ -229,10 +229,44 @@ export default function UploadDropzone() {
           </div>
         )}
       </div>
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:mt-4 sm:gap-x-6">
+  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+    <Tag size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+      Retail
+    </span>
+  </div>
+  <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+    <ShoppingBag size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+      Marketplaces
+    </span>
+  </div>
+  <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+    <RefreshCw size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+      Resale
+    </span>
+  </div>
+  <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+    <Users size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+      Finders
+    </span>
+  </div>
+  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+      searched at once
+    </span>
+  </div>
+</div>
 
-      <p className="mt-2 text-center font-mono text-[0.58rem] uppercase tracking-[0.08em] text-inkSoft sm:text-[0.6rem]">
+      {/*<p className="mt-2 text-center font-mono text-[0.58rem] uppercase tracking-[0.08em] text-inkSoft sm:text-[0.6rem]">
         Retail &middot; Resale &middot; Vintage &mdash; searched at once
-      </p>
+      </p>*/}
     </div>
   );
 }
