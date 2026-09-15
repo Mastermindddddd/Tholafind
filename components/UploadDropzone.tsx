@@ -118,30 +118,30 @@ export default function UploadDropzone() {
           handleFile(e.dataTransfer.files?.[0]);
         }}
         onClick={() => phase === 'idle' && inputRef.current?.click()}
-        className={`relative overflow-hidden rounded-xl border-2 border-dashed bg-paper/70 px-5 py-4 text-center shadow-card transition-colors sm:px-7 sm:py-5 ${
-          phase === 'idle' ? 'cursor-pointer' : ''
-        } ${dragActive ? 'border-brick bg-paperDim' : 'border-pine/30 hover:border-pine/50'}`}
+        className={`relative overflow-hidden rounded-xl border-2 border-dashed bg-paper/70 px-4 py-3.5 text-center shadow-card transition-colors sm:px-7 sm:py-5 ${
+  phase === 'idle' ? 'cursor-pointer' : ''
+} ${dragActive ? 'border-brick bg-paperDim' : 'border-pine/30 hover:border-pine/50'}`}
       >
         {phase === 'idle' && (
           <>
             <div className="relative mx-auto flex items-center justify-center">
-              <span aria-hidden className="absolute -left-6 text-sm text-brass sm:-left-8">
-                ✦
-              </span>
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-pine text-paper shadow-md sm:h-11 sm:w-11">
-                <Camera size={18} strokeWidth={1.5} />
-              </span>
-              <span aria-hidden className="absolute -right-6 text-sm text-pine/40 sm:-right-8">
-                ✦
-              </span>
-            </div>
+  <span aria-hidden className="absolute -left-5 text-xs text-brass sm:-left-8 sm:text-sm">
+    ✦
+  </span>
+  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-pine text-paper shadow-md sm:h-11 sm:w-11">
+    <Camera size={16} strokeWidth={1.5} className="sm:h-[18px] sm:w-[18px]" />
+  </span>
+  <span aria-hidden className="absolute -right-5 text-xs text-pine/40 sm:-right-8 sm:text-sm">
+    ✦
+  </span>
+</div>
 
-            <p className="mt-2 font-display text-base font-semibold text-ink sm:text-lg">
-              Drop your photo here
-            </p>
-            <p className="mt-0.5 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-inkSoft sm:text-[0.65rem]">
-              or click to upload
-            </p>
+<p className="mt-1.5 font-display text-sm font-semibold text-ink sm:mt-2 sm:text-base md:text-lg">
+  Drop your photo here
+</p>
+<p className="mt-0.5 font-mono text-[0.56rem] uppercase tracking-[0.08em] text-inkSoft sm:text-[0.6rem] sm:tracking-[0.1em]">
+  or click to upload
+</p>
 
             <div
               className="mt-3 flex flex-col items-center gap-1.5"

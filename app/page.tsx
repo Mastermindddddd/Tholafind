@@ -94,47 +94,35 @@ export default function HomePage() {
   {/* =====================================================
       DECORATIVE PRODUCT PHOTO — TOP LEFT
   ===================================================== */}
-  <div
-    className="
-      pointer-events-none absolute
-      left-[-35px] top-8
-      hidden w-52
-      rotate-[-8deg]
-      rounded-sm bg-white p-2
-      shadow-[0_12px_30px_rgba(0,0,0,0.12)]
-      lg:block
-      xl:left-8
-    "
-  >
-    <div className="aspect-[4/3] overflow-hidden">
-      <img
-        src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=85"
-        alt="Sneakers"
-        className="h-full w-full object-cover"
-      />
-    </div>
+ {/* DECORATIVE PRODUCT PHOTO — TOP LEFT */}
+<div
+  className="
+    pointer-events-none absolute
+    left-[-20px] top-3
+    w-16
+    rotate-[-8deg]
+    rounded-sm bg-white p-1
+    shadow-[0_6px_14px_rgba(0,0,0,0.12)]
+    sm:left-[-25px] sm:top-5 sm:w-24 sm:p-1.5
+    lg:left-8 lg:top-8 lg:w-52 lg:p-2
+    lg:shadow-[0_12px_30px_rgba(0,0,0,0.12)]
+  "
+>
+  <div className="aspect-[4/3] overflow-hidden">
+    <img
+      src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=85"
+      alt="Sneakers"
+      className="h-full w-full object-cover"
+    />
   </div>
+</div>
 
   {/* Top-left handwritten note */}
-  <div
-    className="
-      pointer-events-none absolute
-      left-[18%] top-20
-      hidden
-      rotate-[-8deg]
-      lg:block
-    "
-  >
-    <p className="font-display text-lg italic text-inkSoft">
-      Just a photo...
-    </p>
-
-    <svg
-      width="75"
-      height="45"
-      viewBox="0 0 75 45"
-      className="ml-6"
-    >
+ <div className="pointer-events-none absolute left-[10%] top-16 hidden rotate-[-8deg] sm:block lg:left-[18%] lg:top-20">
+  <p className="font-display text-xs italic text-inkSoft sm:text-sm lg:text-lg">
+    Just a photo...
+  </p>
+  <svg width="45" height="27" viewBox="0 0 75 45" className="ml-3 sm:ml-4 lg:ml-6 lg:w-[75px] lg:h-[45px]">
       <path
         d="M68 5C50 10 36 27 10 38"
         stroke="currentColor"
@@ -314,63 +302,71 @@ export default function HomePage() {
   "
 >
   {/* Brand */}
-  <div className="font-display text-xl font-semibold tracking-[-0.04em] text-pine sm:text-2xl">
-    Tholafind
-  </div>
+<div className="font-display text-lg font-semibold tracking-[-0.04em] text-pine sm:text-xl md:text-2xl">
+  Tholafind
+</div>
 
-  {/* Small label */}
-  <div className="mt-1.5 flex items-center gap-2">
-    <span className="h-px w-5 bg-pine/30" />
-    <span className="font-mono text-[0.52rem] uppercase tracking-[0.16em] text-inkSoft">
-      Find the things you can't find
-    </span>
-    <span className="h-px w-5 bg-pine/30" />
-  </div>
+{/* Small label */}
+<div className="mt-1.5 flex items-center gap-1.5 sm:gap-2">
+  <span className="h-px w-4 bg-pine/30 sm:w-5" />
+  <span className="font-mono text-[0.46rem] uppercase tracking-[0.14em] text-inkSoft sm:text-[0.52rem] sm:tracking-[0.16em]">
+    Find the things you can't find
+  </span>
+  <span className="h-px w-4 bg-pine/30 sm:w-5" />
+</div>
 
-  {/* Main heading */}
-  <h1 className="mt-2 font-display text-[2.1rem] font-semibold leading-[1.05] tracking-[-0.04em] text-pine sm:text-4xl md:text-[2.9rem] lg:text-[3.3rem]">
-    Snap it. <span className="italic text-brick">We&rsquo;ll find it.</span>
-  </h1>
+{/* Main heading */}
+<h1 className="mt-2 font-display text-[1.65rem] font-semibold leading-[1.08] tracking-[-0.035em] text-pine sm:text-4xl md:text-[2.9rem] lg:text-[3.3rem]">
+  Snap it. <span className="italic text-brick">We&rsquo;ll find it.</span>
+</h1>
 
-  {/* Hand-drawn underline */}
-  <div className="relative mt-1.5">
-    <div className="h-[3px] w-32 rotate-[-1deg] rounded-full bg-brass sm:w-44" />
-    <span className="absolute -right-5 -top-2.5 text-lg text-brass">✦</span>
-  </div>
+{/* Hand-drawn underline */}
+<div className="relative mt-1.5">
+  <div className="h-[2.5px] w-24 rotate-[-1deg] rounded-full bg-brass sm:h-[3px] sm:w-44" />
+  <span className="absolute -right-4 -top-2 text-sm text-brass sm:-right-5 sm:-top-2.5 sm:text-lg">✦</span>
+</div>
 
-  {/* Description */}
-  <p className="mt-2.5 max-w-lg text-[0.72rem] leading-5 text-inkSoft sm:text-[0.8rem] sm:leading-5 md:text-[0.85rem]">
-    Upload a photo of anything you can&rsquo;t find, and we&rsquo;ll search retail, marketplaces
-    and resale — with real people ready to help when the trail goes cold.
-  </p>
+{/* Description */}
+<p className="mt-2.5 max-w-[38ch] text-[0.68rem] leading-[1.15rem] text-inkSoft sm:max-w-lg sm:text-[0.8rem] sm:leading-5 md:text-[0.85rem]">
+  Upload a photo of anything you can&rsquo;t find, and we&rsquo;ll search retail, marketplaces
+  and resale - with real people ready to help when the trail goes cold.
+</p>
 
   {/* CENTERED UPLOAD */}
-  <div className="relative mt-3 w-full max-w-lg sm:mt-4">
+  <div className="relative mt-3 flex w-full justify-center sm:mt-4">
     <UploadDropzone />
   </div>
 
   {/* SEARCH SOURCES */}
-  <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 sm:mt-4 sm:gap-x-6">
-    <div className="flex items-center gap-1.5 text-pine">
-      <Tag size={13} strokeWidth={1.5} />
-      <span className="font-mono text-[0.54rem] uppercase tracking-[0.08em]">Retail</span>
-    </div>
-    <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
-    <div className="flex items-center gap-1.5 text-pine">
-      <ShoppingBag size={13} strokeWidth={1.5} />
-      <span className="font-mono text-[0.54rem] uppercase tracking-[0.08em]">Marketplaces</span>
-    </div>
-    <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
-    <div className="flex items-center gap-1.5 text-pine">
-      <RefreshCw size={13} strokeWidth={1.5} />
-      <span className="font-mono text-[0.54rem] uppercase tracking-[0.08em]">Resale</span>
-    </div>
-    <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
-    <div className="flex items-center gap-1.5 text-pine">
-      <Users size={13} strokeWidth={1.5} />
-      <span className="font-mono text-[0.54rem] uppercase tracking-[0.08em]">Finders</span>
-    </div>
+  <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:mt-4 sm:gap-x-6">
+  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+    <Tag size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+      Retail
+    </span>
   </div>
+  <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+    <ShoppingBag size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+      Marketplaces
+    </span>
+  </div>
+  <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+    <RefreshCw size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+      Resale
+    </span>
+  </div>
+  <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+    <Users size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+      Finders
+    </span>
+  </div>
+</div>
 </div>
 
   {/* =====================================================
