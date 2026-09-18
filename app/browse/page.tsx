@@ -81,7 +81,7 @@ export default async function BrowsePage() {
               <Compass size={20} />
             </span>
             <p className="text-[0.9rem] text-inkSoft">
-              Nothing to show yet - check back once today's finds are in.
+              Nothing to show yet - check back once today&apos;s finds are in.
             </p>
           </div>
         ) : (
