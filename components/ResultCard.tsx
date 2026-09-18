@@ -34,7 +34,7 @@ export default function ResultCard({ item }: { item: FindResult }) {
         <div className="absolute left-2.5 top-2.5">
           <StampBadge confidence={item.confidence} />
         </div>
-        <SavePicker searchResultId={item.id} initiallySaved={item.saved} />
+        <SavePicker itemId={item.id} itemType={item.itemType} initiallySaved={item.saved} />
       </div>
 
       <div className="p-3.5">

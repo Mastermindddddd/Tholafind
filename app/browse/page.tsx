@@ -4,21 +4,20 @@ import Footer from '@/components/Footer';
 import ResultCard from '@/components/ResultCard';
 import { connectToDatabase } from '@/lib/db';
 import { getCuratedResults } from '@/lib/browse/getCuratedResults';
-import { toFindResult } from '@/lib/browse/toFindResult';
+import { toFindResultFromDiscoveryItem } from '@/lib/browse/toFindResult';
 import { getSavedResultIds } from '@/lib/getSavedResultIds';
 import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import { Compass } from 'lucide-react';
 
-// A public discovery feed sampling from live search activity should never
-// be statically cached — see the README's Phase 6 note on the same class
-// of bug (a page with no Clerk auth call has no implicit dynamic-render
-// trigger, so this needs the export below explicitly).
-export const dynamic = 'force-dynamic';
+// Content only changes once a day via the discovery cron, which calls
+// revalidatePath('/browse') itself right after ingesting — so this is a
+// safety-net revalidation window, not the only thing keeping it fresh.
+export const revalidate = 86400;
 
 export const metadata = {
   title: 'Browse real finds - Tholafind',
   description:
-    'Browse real items other people have tracked down on Tholafind - retail, resale, and vintage finds, sorted by how confidently they were matched.',
+    'Browse real items from across the web - retail, resale, and vintage finds, refreshed daily and sorted by how confidently they were matched.',
 };
 
 const categories = [
@@ -36,10 +35,11 @@ export default async function BrowsePage() {
   const user = await getOrCreateUser();
   const savedResultIds = await getSavedResultIds(
     user?._id,
-    results.map((r) => r._id)
+    results.map((r) => r._id),
+    'DiscoveryItem'
   );
 
-  const findResults = results.map((r) => toFindResult(r, savedResultIds));
+  const findResults = results.map((r) => toFindResultFromDiscoveryItem(r, savedResultIds));
 
   return (
     <div className="min-h-screen bg-paper paper-texture">
@@ -53,8 +53,8 @@ export default async function BrowsePage() {
           Real things, actually found.
         </h1>
         <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
-          Every card here is a genuine match from someone else&rsquo;s hunt - not a demo, not
-          a mockup. Tap the heart on anything to save it to your own collection.
+          A fresh pull from across the web every day - not a demo, not a mockup. Tap the heart
+          on anything to save it to your own collection.
         </p>
 
         <nav className="mt-6 flex flex-wrap gap-2">
@@ -81,7 +81,7 @@ export default async function BrowsePage() {
               <Compass size={20} />
             </span>
             <p className="text-[0.9rem] text-inkSoft">
-              Nothing to show yet - check back once a few hunts have wrapped up.
+              Nothing to show yet - check back once today's finds are in.
             </p>
           </div>
         ) : (

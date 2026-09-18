@@ -12,11 +12,12 @@ interface CollectionOption {
 }
 
 interface SavePickerProps {
-  searchResultId: string;
+  itemId: string;
+  itemType: 'SearchResult' | 'DiscoveryItem';
   initiallySaved: boolean;
 }
 
-export default function SavePicker({ searchResultId, initiallySaved }: SavePickerProps) {
+export default function SavePicker({ itemId, itemType, initiallySaved }: SavePickerProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [collections, setCollections] = useState<CollectionOption[] | null>(null);
@@ -29,7 +30,6 @@ export default function SavePicker({ searchResultId, initiallySaved }: SavePicke
 
   const savedAnywhere = initiallySaved || savedIn.size > 0;
 
-  // Close on outside click.
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -46,7 +46,7 @@ export default function SavePicker({ searchResultId, initiallySaved }: SavePicke
     try {
       const [collectionsRes, statusRes] = await Promise.all([
         fetch('/api/collections'),
-        fetch(`/api/collections/items?searchResultId=${searchResultId}`),
+        fetch(`/api/collections/items?itemId=${itemId}&itemType=${itemType}`),
       ]);
       const collectionsData = await collectionsRes.json();
       const statusData = await statusRes.json();
@@ -66,11 +66,9 @@ export default function SavePicker({ searchResultId, initiallySaved }: SavePicke
     } finally {
       setLoading(false);
     }
-  }, [searchResultId]);
+  }, [itemId, itemType]);
 
   const handleHeartClick = (e: React.MouseEvent) => {
-    // Without this, clicking the heart would also trigger the parent <a>'s
-    // navigation to the external listing.
     e.preventDefault();
     e.stopPropagation();
 
@@ -93,17 +91,17 @@ export default function SavePicker({ searchResultId, initiallySaved }: SavePicke
     const wasSaved = savedIn.has(collectionId);
     const nextSet = new Set(savedIn);
     wasSaved ? nextSet.delete(collectionId) : nextSet.add(collectionId);
-    setSavedIn(nextSet); // optimistic
+    setSavedIn(nextSet);
 
     try {
       const res = await fetch('/api/collections/items', {
         method: wasSaved ? 'DELETE' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ searchResultId, collectionId }),
+        body: JSON.stringify({ itemId, itemType, collectionId }),
       });
       if (!res.ok) throw new Error();
     } catch {
-      setSavedIn(savedIn); // roll back to the pre-toggle set
+      setSavedIn(savedIn);
     }
   };
 
@@ -126,7 +124,7 @@ export default function SavePicker({ searchResultId, initiallySaved }: SavePicke
       await fetch('/api/collections/items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ searchResultId, collectionId: createData.id }),
+        body: JSON.stringify({ itemId, itemType, collectionId: createData.id }),
       });
 
       setCollections((prev) => [...(prev ?? []), { id: createData.id, name: trimmed, isDefault: false }]);

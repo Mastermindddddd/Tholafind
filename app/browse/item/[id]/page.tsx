@@ -7,9 +7,9 @@ import Footer from '@/components/Footer';
 import ResultCard from '@/components/ResultCard';
 import ProductJsonLd from '@/components/ProductJsonLd';
 import { connectToDatabase } from '@/lib/db';
-import { SearchResult } from '@/lib/models';
-import { getCuratedResults } from '@/lib/browse/getCuratedResults';
-import { toFindResult } from '@/lib/browse/toFindResult';
+import { SearchResult, type SearchResultDoc } from '@/lib/models';
+import { getCuratedSearchResults } from '@/lib/browse/getCuratedResults';
+import { toFindResultFromSearchResult } from '@/lib/browse/toFindResult';
 import { getSavedResultIds } from '@/lib/getSavedResultIds';
 import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import StampBadge from '@/components/StampBadge';
@@ -61,29 +61,41 @@ export default async function ItemDetailPage({ params }: PageProps) {
   }
 
   await connectToDatabase();
-  const doc = await SearchResult.findById(id).lean();
+  const rawDoc = await SearchResult.findById(id).lean();
 
   // 'guess'-tier results don't get a public page — same quality bar as the
   // rest of /browse. They still exist and work fine on their own search's
   // results page, just aren't promoted as standalone public content.
-  if (!doc || doc.confidence === 'guess') {
+  if (!rawDoc || rawDoc.confidence === 'guess') {
     notFound();
   }
 
-  const user = await getOrCreateUser();
-  const savedResultIds = await getSavedResultIds(user?._id, [doc._id]);
-  const item = toFindResult(doc, savedResultIds);
+  // .lean() doesn't carry the precise Mongoose-inferred type through, so
+  // this cast matches the same pattern getCuratedResults.ts already uses
+  // for SearchResult queries.
+  const doc = rawDoc as SearchResultDoc & { _id: Types.ObjectId };
 
-  const related = await getCuratedResults({
+  const user = await getOrCreateUser();
+  const savedResultIds = await getSavedResultIds(user?._id, [doc._id], 'SearchResult');
+  const item = toFindResultFromSearchResult(doc, savedResultIds);
+
+  // Related items are still drawn from SearchResult (the same
+  // matched-photo pool the item itself came from), not from the
+  // DiscoveryItem /browse feed — those are two intentionally separate
+  // content pools. getCuratedSearchResults is the original
+  // SearchResult-scoped curation logic, kept alongside the newer
+  // DiscoveryItem-scoped getCuratedResults specifically for this page.
+  const related = await getCuratedSearchResults({
     sourceKind: doc.sourceKind,
     limit: 8,
     excludeId: id,
   });
   const relatedSavedIds = await getSavedResultIds(
     user?._id,
-    related.map((r) => r._id)
+    related.map((r) => r._id),
+    'SearchResult'
   );
-  const relatedItems = related.map((r) => toFindResult(r, relatedSavedIds));
+  const relatedItems = related.map((r) => toFindResultFromSearchResult(r, relatedSavedIds));
 
   const pageUrl = `${SITE_URL}/browse/item/${id}`;
 

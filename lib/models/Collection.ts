@@ -4,8 +4,6 @@ const CollectionSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     name: { type: String, required: true, trim: true, maxlength: 80 },
-    // Every account gets one of these automatically (Phase 5) so searches are
-    // never lost even if the user never manually organizes anything.
     isDefault: { type: Boolean, default: false },
   },
   { timestamps: true }
@@ -18,16 +16,31 @@ export type CollectionDoc = InferSchemaType<typeof CollectionSchema> & { _id: Ty
 export const Collection: Model<CollectionDoc> =
   models.Collection || model<CollectionDoc>('Collection', CollectionSchema);
 
+/**
+ * itemType + itemId replaces the old hard SearchResult-only reference, so
+ * a save can point at either a SearchResult (from a user's hunt) or a
+ * DiscoveryItem (from the daily /browse feed) without two parallel
+ * schemas. `searchResultId` is kept, deprecated, for backward
+ * compatibility with existing documents and any code not yet migrated —
+ * see migration note below. New writes should use itemType/itemId only.
+ */
 const CollectionItemSchema = new Schema(
   {
     collectionId: { type: Schema.Types.ObjectId, ref: 'Collection', required: true, index: true },
-    searchResultId: { type: Schema.Types.ObjectId, ref: 'SearchResult', required: true },
+
+    itemType: { type: String, enum: ['SearchResult', 'DiscoveryItem'], required: true },
+    itemId: { type: Schema.Types.ObjectId, required: true },
+
+    // Deprecated: superseded by itemType/itemId above. Kept so existing
+    // CollectionItem documents (written before this migration) still read
+    // back correctly without a data backfill. Do not write to this field
+    // in new code — see migration note in Collection.ts's export block.
+    searchResultId: { type: Schema.Types.ObjectId, ref: 'SearchResult' },
   },
   { timestamps: true }
 );
 
-// A given result can only be saved once per collection.
-CollectionItemSchema.index({ collectionId: 1, searchResultId: 1 }, { unique: true });
+CollectionItemSchema.index({ collectionId: 1, itemType: 1, itemId: 1 }, { unique: true });
 
 export type CollectionItemDoc = InferSchemaType<typeof CollectionItemSchema> & { _id: Types.ObjectId };
 

@@ -4,6 +4,7 @@ export type Confidence = 'exact' | 'close' | 'guess';
 
 export interface FindResult {
   id: string;
+  itemType: 'SearchResult' | 'DiscoveryItem';
   title: string;
   source: string;
   sourceKind: SourceKind;
@@ -11,6 +12,6 @@ export interface FindResult {
   confidence: Confidence;
   image: string;
   url: string;
-  aspect: number; // height / width, for masonry variety
+  aspect: number;
   saved: boolean;
 }

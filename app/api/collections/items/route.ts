@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server';
 import { Types } from 'mongoose';
 import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import { getOrCreateDefaultCollection } from '@/lib/getOrCreateDefaultCollection';
-import { Collection, CollectionItem, SearchResult } from '@/lib/models';
+import { Collection, CollectionItem, SearchResult, DiscoveryItem } from '@/lib/models';
 
 export const dynamic = 'force-dynamic';
+
+type ItemType = 'SearchResult' | 'DiscoveryItem';
+
+function parseItemType(value: unknown): ItemType | null {
+  return value === 'SearchResult' || value === 'DiscoveryItem' ? value : null;
+}
 
 async function resolveTargetCollection(userId: Types.ObjectId, collectionId: unknown) {
   if (typeof collectionId === 'string' && collectionId.length > 0) {
@@ -12,6 +18,16 @@ async function resolveTargetCollection(userId: Types.ObjectId, collectionId: unk
     return Collection.findOne({ _id: collectionId, userId });
   }
   return getOrCreateDefaultCollection(userId);
+}
+
+/** Confirms the referenced item actually exists before letting it be saved
+ * — same check the old SearchResult-only version did, just dispatched by
+ * itemType now. */
+async function itemExists(itemType: ItemType, itemId: string): Promise<boolean> {
+  if (itemType === 'SearchResult') {
+    return (await SearchResult.exists({ _id: itemId })) !== null;
+  }
+  return (await DiscoveryItem.exists({ _id: itemId })) !== null;
 }
 
 /** Which of the signed-in user's collections currently contain this item. */
@@ -22,9 +38,11 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const searchResultId = searchParams.get('searchResultId');
-  if (!searchResultId || !Types.ObjectId.isValid(searchResultId)) {
-    return NextResponse.json({ ok: false, message: 'Missing or invalid searchResultId.' }, { status: 400 });
+  const itemId = searchParams.get('itemId');
+  const itemType = parseItemType(searchParams.get('itemType'));
+
+  if (!itemId || !Types.ObjectId.isValid(itemId) || !itemType) {
+    return NextResponse.json({ ok: false, message: 'Missing or invalid itemId/itemType.' }, { status: 400 });
   }
 
   const userCollectionIds = (await Collection.find({ userId: user._id }).select('_id')).map(
@@ -32,7 +50,8 @@ export async function GET(request: Request) {
   );
   const items = await CollectionItem.find({
     collectionId: { $in: userCollectionIds },
-    searchResultId,
+    itemType,
+    itemId,
   }).select('collectionId');
 
   return NextResponse.json({
@@ -48,20 +67,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: 'Sign in to save finds.' }, { status: 401 });
   }
 
-  let body: { searchResultId?: unknown; collectionId?: unknown };
+  let body: { itemId?: unknown; itemType?: unknown; collectionId?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ ok: false, message: 'Invalid JSON body.' }, { status: 400 });
   }
 
-  const searchResultId = typeof body.searchResultId === 'string' ? body.searchResultId : null;
-  if (!searchResultId || !Types.ObjectId.isValid(searchResultId)) {
-    return NextResponse.json({ ok: false, message: 'Missing or invalid searchResultId.' }, { status: 400 });
+  const itemId = typeof body.itemId === 'string' ? body.itemId : null;
+  const itemType = parseItemType(body.itemType);
+  if (!itemId || !Types.ObjectId.isValid(itemId) || !itemType) {
+    return NextResponse.json({ ok: false, message: 'Missing or invalid itemId/itemType.' }, { status: 400 });
   }
 
-  const result = await SearchResult.findById(searchResultId);
-  if (!result) {
+  if (!(await itemExists(itemType, itemId))) {
     return NextResponse.json({ ok: false, message: 'That item no longer exists.' }, { status: 404 });
   }
 
@@ -70,14 +89,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: 'Collection not found.' }, { status: 404 });
   }
 
+  let created = false;
   try {
-    await CollectionItem.create({ collectionId: collection._id, searchResultId });
+    await CollectionItem.create({ collectionId: collection._id, itemType, itemId });
+    created = true;
   } catch (err) {
     // Duplicate key = already saved to this collection — not an error from
     // the caller's perspective, the end state is exactly what they wanted.
     if (!(err instanceof Error && 'code' in err && (err as { code?: number }).code === 11000)) {
       throw err;
     }
+  }
+
+  // Popularity signal for getCuratedResults' ranking — only meaningful for
+  // DiscoveryItem, and only on an actual new save (not the idempotent
+  // duplicate-key no-op above, which shouldn't double-count).
+  if (created && itemType === 'DiscoveryItem') {
+    await DiscoveryItem.updateOne({ _id: itemId }, { $inc: { saveCount: 1 } });
   }
 
   return NextResponse.json({ ok: true, collectionId: String(collection._id) });
@@ -90,17 +118,20 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ ok: false, message: 'Sign in to manage saved finds.' }, { status: 401 });
   }
 
-  let body: { searchResultId?: unknown; collectionId?: unknown };
+  let body: { itemId?: unknown; itemType?: unknown; collectionId?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ ok: false, message: 'Invalid JSON body.' }, { status: 400 });
   }
 
-  const searchResultId = typeof body.searchResultId === 'string' ? body.searchResultId : null;
-  if (!searchResultId || !Types.ObjectId.isValid(searchResultId)) {
-    return NextResponse.json({ ok: false, message: 'Missing or invalid searchResultId.' }, { status: 400 });
+  const itemId = typeof body.itemId === 'string' ? body.itemId : null;
+  const itemType = parseItemType(body.itemType);
+  if (!itemId || !Types.ObjectId.isValid(itemId) || !itemType) {
+    return NextResponse.json({ ok: false, message: 'Missing or invalid itemId/itemType.' }, { status: 400 });
   }
+
+  let removedCount = 0;
 
   if (typeof body.collectionId === 'string' && Types.ObjectId.isValid(body.collectionId)) {
     // Remove from one specific collection.
@@ -108,7 +139,8 @@ export async function DELETE(request: Request) {
     if (!collection) {
       return NextResponse.json({ ok: false, message: 'Collection not found.' }, { status: 404 });
     }
-    await CollectionItem.deleteOne({ collectionId: collection._id, searchResultId });
+    const result = await CollectionItem.deleteOne({ collectionId: collection._id, itemType, itemId });
+    removedCount = result.deletedCount ?? 0;
   } else {
     // No specific collection given (the common case — the heart icon
     // doesn't know which collection(s) hold this item): remove it from
@@ -116,10 +148,21 @@ export async function DELETE(request: Request) {
     const userCollectionIds = (await Collection.find({ userId: user._id }).select('_id')).map(
       (c) => c._id
     );
-    await CollectionItem.deleteMany({
+    const result = await CollectionItem.deleteMany({
       collectionId: { $in: userCollectionIds },
-      searchResultId,
+      itemType,
+      itemId,
     });
+    removedCount = result.deletedCount ?? 0;
+  }
+
+  // Mirror the POST increment — only decrement for saves that actually
+  // existed, and never below zero (defensive floor in case of any drift).
+  if (removedCount > 0 && itemType === 'DiscoveryItem') {
+    await DiscoveryItem.updateOne(
+      { _id: itemId, saveCount: { $gt: 0 } },
+      { $inc: { saveCount: -1 } }
+    );
   }
 
   return NextResponse.json({ ok: true });
