@@ -1,25 +1,34 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
-// Anonymous *browsing* is still fine (e.g. viewing a shared /results page),
-// but starting a hunt now requires a signed-in user. Collections and
-// onboarding were already gated.
-const isProtectedRoute = createRouteMatcher([
-  '/collections(.*)',
-  '/onboarding(.*)',
-  '/api/upload(.*)',
-]);
+// Page routes: unauthenticated visits get redirected to sign-in.
+const isProtectedPage = createRouteMatcher(['/collections(.*)', '/onboarding(.*)']);
+
+// API routes: unauthenticated requests get a JSON 401, never a redirect —
+// the client can't do anything useful with an HTML sign-in page as a
+// fetch() response body.
+const isProtectedApi = createRouteMatcher(['/api/upload(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
+  if (isProtectedApi(req)) {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { ok: false, message: 'Sign in to start a hunt.' },
+        { status: 401 }
+      );
+    }
+    return;
+  }
+
+  if (isProtectedPage(req)) {
     await auth.protect();
   }
 });
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and static files, unless referenced in a search param.
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico)).*)',
-    // Always run for API routes.
     '/(api|trpc)(.*)',
   ],
 };
