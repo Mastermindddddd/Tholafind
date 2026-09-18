@@ -54,18 +54,24 @@ export default function UploadDropzone() {
       if (hint.trim()) formData.append('hint', hint.trim());
 
       try {
-        const res = await withMinimumDelay(
-          fetch('/api/upload', { method: 'POST', body: formData }),
-          MIN_SCAN_MS
-        );
-        const data = await res.json();
+  const res = await withMinimumDelay(
+    fetch('/api/upload', { method: 'POST', body: formData }),
+    MIN_SCAN_MS
+  );
 
-        if (!res.ok || !data.ok) {
-          throw new Error(data.message || 'Upload failed.');
-        }
+  if (res.status === 401) {
+    router.push('/sign-in');
+    return;
+  }
 
-        router.push(`/results/${data.searchId}`);
-      } catch (err) {
+  const data = await res.json();
+
+  if (!res.ok || !data.ok) {
+    throw new Error(data.message || 'Upload failed.');
+  }
+
+  router.push(`/results/${data.searchId}`);
+} catch (err) {
         setErrorMessage(
           err instanceof Error ? err.message : 'That upload didn\u2019t go through \u2014 try again.'
         );

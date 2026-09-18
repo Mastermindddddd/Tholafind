@@ -1,9 +1,13 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-// Anonymous search is a deliberate product decision (see Phase 1 of the
-// implementation plan): don't force signup before someone sees value.
-// Only collections and onboarding require a signed-in user.
-const isProtectedRoute = createRouteMatcher(['/collections(.*)', '/onboarding(.*)']);
+// Anonymous *browsing* is still fine (e.g. viewing a shared /results page),
+// but starting a hunt now requires a signed-in user. Collections and
+// onboarding were already gated.
+const isProtectedRoute = createRouteMatcher([
+  '/collections(.*)',
+  '/onboarding(.*)',
+  '/api/upload(.*)',
+]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {

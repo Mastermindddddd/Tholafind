@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { put } from '@vercel/blob';
 import { connectToDatabase } from '@/lib/db';
 import { Search } from '@/lib/models';
@@ -34,13 +35,20 @@ async function runSearchSafely(searchId: string) {
 }
 
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json(
+      { ok: false, message: 'Sign in to start a hunt.' },
+      { status: 401 }
+    );
+  }
+
   const contentType = request.headers.get('content-type') || '';
 
   try {
     await connectToDatabase();
 
-    // Anonymous search is allowed by design (Phase 1) — a null user is fine here,
-    // Search.userId is optional.
+    // No longer anonymous — userId is guaranteed above.
     const user = await getOrCreateUser();
 
     // Cost/abuse protection, not a pricing lever — see
