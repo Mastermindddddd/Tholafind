@@ -6,7 +6,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ResultCard from '@/components/ResultCard';
 import { getOrCreateUser, needsOnboarding } from '@/lib/getOrCreateUser';
-import { Collection, CollectionItem, SearchResult } from '@/lib/models';
+import { Collection, CollectionItem, SearchResult, DiscoveryItem } from '@/lib/models';
 import { FindResult } from '@/lib/types';
 
 // Explicit rather than relying on getOrCreateUser's implicit dynamic
@@ -37,28 +37,78 @@ export default async function CollectionDetailPage({ params }: PageProps) {
     .sort({ createdAt: -1 })
     .lean();
 
-  const resultDocs = await SearchResult.find({
-    _id: { $in: items.map((i) => i.searchResultId) },
-  }).lean();
+  // A collection can now hold either kind of item — split by itemType so
+  // each pool is fetched from its own model. itemId is the current field;
+  // searchResultId only remains on documents saved before the itemType
+  // migration and is not written to anymore.
+  const searchResultIds = items
+    .filter((i) => i.itemType === 'SearchResult')
+    .map((i) => i.itemId ?? i.searchResultId)
+    .filter((v): v is Types.ObjectId => Boolean(v));
+
+  const discoveryItemIds = items
+    .filter((i) => i.itemType === 'DiscoveryItem')
+    .map((i) => i.itemId)
+    .filter((v): v is Types.ObjectId => Boolean(v));
+
+  const [searchResultDocs, discoveryItemDocs] = await Promise.all([
+    searchResultIds.length > 0
+      ? SearchResult.find({ _id: { $in: searchResultIds } }).lean()
+      : Promise.resolve([]),
+    discoveryItemIds.length > 0
+      ? DiscoveryItem.find({ _id: { $in: discoveryItemIds } }).lean()
+      : Promise.resolve([]),
+  ]);
+
+  const searchResultsById = new Map(searchResultDocs.map((d) => [String(d._id), d]));
+  const discoveryItemsById = new Map(discoveryItemDocs.map((d) => [String(d._id), d]));
 
   // Preserve the "most recently saved first" order from CollectionItem,
-  // rather than whatever order the $in query happens to return them in.
-  const resultsById = new Map(resultDocs.map((d) => [String(d._id), d]));
+  // rather than whatever order the two $in queries happen to return them
+  // in — each CollectionItem row is resolved against whichever map
+  // matches its itemType, then mapped to a common FindResult shape.
   const results: FindResult[] = items
-    .map((item) => resultsById.get(String(item.searchResultId)))
-    .filter((doc): doc is NonNullable<typeof doc> => Boolean(doc))
-    .map((doc) => ({
-      id: String(doc._id),
-      title: doc.title,
-      source: doc.source,
-      sourceKind: doc.sourceKind,
-      price: doc.price || 'Price unavailable',
-      confidence: doc.confidence,
-      image: doc.image,
-      url: doc.url,
-      aspect: 1,
-      saved: true, // by definition, everything here is saved to this collection
-    }));
+    .map((item): FindResult | null => {
+      const rawId = String(item.itemId ?? item.searchResultId ?? '');
+
+      if (item.itemType === 'DiscoveryItem') {
+        const doc = discoveryItemsById.get(rawId);
+        if (!doc) return null;
+        return {
+          id: String(doc._id),
+          itemType: 'DiscoveryItem',
+          title: doc.title,
+          source: doc.source,
+          sourceKind: doc.sourceKind,
+          price: doc.price,
+          confidence: 'exact',
+          image: doc.image,
+          url: doc.url,
+          aspect: 1,
+          saved: true, // by definition, everything here is saved to this collection
+        };
+      }
+
+      // itemType === 'SearchResult' (or missing, for pre-migration rows —
+      // those were backfilled to 'SearchResult' explicitly, so this
+      // branch is the correct fallback either way).
+      const doc = searchResultsById.get(rawId);
+      if (!doc) return null;
+      return {
+        id: String(doc._id),
+        itemType: 'SearchResult',
+        title: doc.title,
+        source: doc.source,
+        sourceKind: doc.sourceKind,
+        price: doc.price || 'Price unavailable',
+        confidence: doc.confidence,
+        image: doc.image,
+        url: doc.url,
+        aspect: 1,
+        saved: true,
+      };
+    })
+    .filter((r): r is FindResult => r !== null);
 
   return (
     <div className="min-h-screen bg-paper paper-texture">
