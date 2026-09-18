@@ -49,14 +49,16 @@ export default async function ResultsPage({ params }: PageProps) {
     );
     const savedItems = await CollectionItem.find({
       collectionId: { $in: userCollectionIds },
-      searchResultId: { $in: resultDocs.map((d) => d._id) },
-    }).select('searchResultId');
-    savedResultIds = new Set(savedItems.map((item) => String(item.searchResultId)));
+      itemType: 'SearchResult',
+      itemId: { $in: resultDocs.map((d) => d._id) },
+    }).select('itemId');
+    savedResultIds = new Set(savedItems.map((item) => String(item.itemId)));
   }
 
   const results: FindResult[] = resultDocs
     .map((doc) => ({
       id: String(doc._id),
+      itemType: 'SearchResult' as const,
       title: doc.title,
       source: doc.source,
       sourceKind: doc.sourceKind,
