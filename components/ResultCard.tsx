@@ -12,6 +12,12 @@ const sourceLabel: Record<FindResult['sourceKind'], string> = {
 };
 
 export default function ResultCard({ item }: { item: FindResult }) {
+  // Confidence ("exact match" / "close match") only means something for a
+  // SearchResult — it reflects how well something matched a user's own
+  // photo. DiscoveryItem entries on /browse were never matched against
+  // anything, so the stamp badge doesn't apply to them and is skipped.
+  const showConfidenceBadge = item.itemType === 'SearchResult';
+
   return (
     <a
       href={item.url}
@@ -21,19 +27,17 @@ export default function ResultCard({ item }: { item: FindResult }) {
     >
       <div className="stitch-border opacity-70" />
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: `1 / ${item.aspect}` }}>
-        {/* Plain img, not next/image: result thumbnails come from whichever
-            retailer/eBay/Etsy/Google-thumbnail domain each search result
-            happens to be hosted on — an unbounded, unpredictable set that
-            can't be pre-allowlisted via next.config.mjs remotePatterns. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={item.image}
           alt={item.title}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
         />
-        <div className="absolute left-2.5 top-2.5">
-          <StampBadge confidence={item.confidence} />
-        </div>
+        {showConfidenceBadge && (
+          <div className="absolute left-2.5 top-2.5">
+            <StampBadge confidence={item.confidence} />
+          </div>
+        )}
         <SavePicker itemId={item.id} itemType={item.itemType} initiallySaved={item.saved} />
       </div>
 
