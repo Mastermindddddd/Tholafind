@@ -8,6 +8,7 @@ import { generateCombinedEmbedding } from './embeddings';
 import { searchGoogleLens } from './providers/serpapiLens';
 import { searchEbay } from './providers/ebay';
 import { searchEtsy } from './providers/etsy';
+import { resolvePriceFromUrl } from './priceResolver';
 
 function toResultDoc(searchId: unknown, candidate: RawCandidate, rank: number) {
   return {
@@ -24,23 +25,38 @@ function toResultDoc(searchId: unknown, candidate: RawCandidate, rank: number) {
   };
 }
 
+// Caps how many priceless results get a live page-fetch per search, so one
+// hunt with a lot of price-missing matches can't blow out the route's
+// maxDuration (60s) — the eBay/Etsy/Lens calls above already used some of
+// that budget. Each resolve has its own 6s timeout (priceResolver.ts), run
+// in parallel, so this bounds worst case to ~6s rather than 6s × N.
+const MAX_PRICE_RESOLUTIONS = 10;
+
 /**
- * Runs a full multi-source search for an existing Search document and
- * writes the resulting SearchResult documents. Called synchronously from
- * the upload route (see README — Phase 3 — for the tradeoffs of that choice
- * versus a background job).
- *
- * Never throws for individual provider failures — a search with 2 of 3
- * providers working still returns useful results. It only throws if the
- * Search document itself can't be found or saved.
- *
- * Idempotent by design: any existing SearchResult documents for this
- * search are cleared before writing fresh ones. This makes it safe to call
- * again on the same search after Phase 4's refine flow adds a photo or a
- * hint — the person sees one clean, complete result set reflecting
- * everything currently attached to the hunt, not old low-confidence
- * guesses sitting alongside new better matches.
+ * Best-effort price backfill for results the providers returned with no
+ * price at all (see the price?: field on RawCandidate/toResultDoc) — fetches
+ * each item's own page and extracts price from its structured data. Never
+ * throws: an unresolved price just leaves the result exactly as it already
+ * was (price: undefined → "See price on site" downstream in toFindResult).
  */
+async function backfillMissingPrices(
+  docs: ReturnType<typeof toResultDoc>[]
+): Promise<void> {
+  const missing = docs.filter((d) => !d.price).slice(0, MAX_PRICE_RESOLUTIONS);
+  if (missing.length === 0) return;
+
+  await Promise.all(
+    missing.map(async (doc) => {
+      try {
+        const resolved = await resolvePriceFromUrl(doc.url);
+        if (resolved) doc.price = resolved;
+      } catch (err) {
+        console.error(`[runSearch] price resolution failed for ${doc.url}:`, err);
+      }
+    })
+  );
+}
+
 export async function runSearch(searchId: string): Promise<void> {
   await connectToDatabase();
 
@@ -55,16 +71,12 @@ export async function runSearch(searchId: string): Promise<void> {
 
   const imageUrls = search.images;
 
-  // Query embedding: stored for future use (see cosineSimilarity.ts) —
-  // failure here is non-fatal, the rest of the search continues without it.
-  // Averaged across every attached photo when there's more than one.
   try {
     search.embedding = await generateCombinedEmbedding(imageUrls);
   } catch (err) {
     console.error(`[runSearch] embedding failed for ${searchId} (non-fatal):`, err);
   }
 
-  // Retail / visual search — across every attached photo, merged.
   let lensResults: RawCandidate[] = [];
   try {
     lensResults = await searchGoogleLens(imageUrls);
@@ -72,7 +84,6 @@ export async function runSearch(searchId: string): Promise<void> {
     console.error(`[runSearch] SerpApi Lens failed for ${searchId}:`, err);
   }
 
-  // Text query for the marketplace providers, preferring the user's hint.
   const query = deriveSearchQuery(search.hint, lensResults[0]?.title);
 
   let ebayResults: RawCandidate[] = [];
@@ -104,6 +115,9 @@ export async function runSearch(searchId: string): Promise<void> {
     ...ebayResults.map((c, i) => toResultDoc(search._id, c, i)),
     ...etsyResults.map((c, i) => toResultDoc(search._id, c, i)),
   ];
+
+  // Best-effort — mutates price in place on any doc that resolves.
+  await backfillMissingPrices(resultDocs);
 
   if (resultDocs.length > 0) {
     await SearchResult.insertMany(resultDocs);
