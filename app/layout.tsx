@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { Suspense } from 'react';
 import { ClerkProvider } from '@clerk/nextjs';
+import NavigationProgress from '@/components/NavigationProgress';
 import './globals.css';
 
-  export const metadata: Metadata = {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://tholafind.com'),
-    title: 'Tholafind - Log it. We\u2019ll track it down.',
-    description: 'Snap a photo of anything you can\u2019t find, and Tholafind searches retail, marketplaces, and resale at once \u2014 with a crowd of finders standing by when the trail goes cold.',
-  };
-
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://tholafind.com'),
+  title: 'Tholafind - Log it. We\u2019ll track it down.',
+  description: 'Snap a photo of anything you can\u2019t find, and Tholafind searches retail, marketplaces, and resale at once \u2014 with a crowd of finders standing by when the trail goes cold.',
+};
 
 export default function RootLayout({
   children,
@@ -41,9 +42,11 @@ export default function RootLayout({
         </head>
 
         <body className="font-body antialiased">
+          <Suspense fallback={null}>
+            <NavigationProgress />
+          </Suspense>
           {children}
 
-          {/* Google Analytics */}
           <Script
             src="https://www.googletagmanager.com/gtag/js?id=G-XSMG4Q527G"
             strategy="afterInteractive"
