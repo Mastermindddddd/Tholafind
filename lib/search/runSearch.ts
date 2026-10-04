@@ -3,7 +3,7 @@ import { connectToDatabase } from '@/lib/db';
 import { Search, SearchResult } from '@/lib/models';
 import { RawCandidate } from './types';
 import { confidenceForCandidate, scoreForRank } from './confidence';
-import { deriveSearchQuery } from './deriveSearchQuery';
+import { deriveSearchQueries } from './deriveSearchQuery';
 import { generateCombinedEmbedding } from './embeddings';
 import { searchGoogleLens } from './providers/serpapiLens';
 import { searchEbay } from './providers/ebay';
@@ -23,6 +23,52 @@ function toResultDoc(searchId: unknown, candidate: RawCandidate, rank: number) {
     confidence: confidenceForCandidate(candidate.sourceKind, rank),
     metadata: candidate.metadata ?? {},
   };
+}
+
+/**
+ * Dedupes by URL, keeping the first occurrence — same pattern
+ * serpapiLens.ts already uses to merge results across multiple photos.
+ * Needed here because two query variants against the same provider
+ * (e.g. "Nike Air Vaporfly 3 Running Shoe" and "Nike Air Vaporfly") will
+ * often return overlapping listings; without this, the same eBay item
+ * could show up twice in one hunt's results, once per query.
+ */
+function dedupeByUrl(candidates: RawCandidate[]): RawCandidate[] {
+  const seen = new Map<string, RawCandidate>();
+  for (const c of candidates) {
+    if (!seen.has(c.url)) seen.set(c.url, c);
+  }
+  return Array.from(seen.values());
+}
+
+/**
+ * Runs one provider's search across every derived query variant in
+ * parallel, tolerating individual variant failures — one variant failing
+ * (say, a transient eBay error on the broader query) shouldn't throw away
+ * results the other variant returned fine. Order is preserved as
+ * variant-major (all of the most specific query's results first, then the
+ * broader query's additions), so the most specific matches keep the best
+ * rank positions after dedupe — which matters, since rank drives confidence
+ * scoring downstream (see confidence.ts).
+ */
+async function runProviderAcrossQueries(
+  label: string,
+  searchId: string,
+  queries: string[],
+  provider: (query: string) => Promise<RawCandidate[]>
+): Promise<RawCandidate[]> {
+  const runs = await Promise.allSettled(queries.map((q) => provider(q)));
+
+  const collected: RawCandidate[] = [];
+  runs.forEach((run, i) => {
+    if (run.status === 'fulfilled') {
+      collected.push(...run.value);
+    } else {
+      console.error(`[runSearch] ${label} query "${queries[i]}" failed for ${searchId}:`, run.reason);
+    }
+  });
+
+  return dedupeByUrl(collected);
 }
 
 // Caps how many priceless results get a live page-fetch per search, so one
@@ -84,28 +130,20 @@ export async function runSearch(searchId: string): Promise<void> {
     console.error(`[runSearch] SerpApi Lens failed for ${searchId}:`, err);
   }
 
-  const query = deriveSearchQuery(search.hint, lensResults[0]?.title);
+  // The "pivot": once Lens has identified what the item likely is (or the
+  // user has told us via a hint), fan that identification out into up to 2
+  // query variants and run each against every text-based marketplace we're
+  // actually authorized to query (eBay, Etsy) — see deriveSearchQuery.ts.
+  const queries = deriveSearchQueries(search.hint, lensResults[0]?.title);
 
   let ebayResults: RawCandidate[] = [];
   let etsyResults: RawCandidate[] = [];
 
-  if (query) {
-    const [ebaySettled, etsySettled] = await Promise.allSettled([
-      searchEbay(query),
-      searchEtsy(query),
+  if (queries.length > 0) {
+    [ebayResults, etsyResults] = await Promise.all([
+      runProviderAcrossQueries('eBay', searchId, queries, searchEbay),
+      runProviderAcrossQueries('Etsy', searchId, queries, searchEtsy),
     ]);
-
-    if (ebaySettled.status === 'fulfilled') {
-      ebayResults = ebaySettled.value;
-    } else {
-      console.error(`[runSearch] eBay failed for ${searchId}:`, ebaySettled.reason);
-    }
-
-    if (etsySettled.status === 'fulfilled') {
-      etsyResults = etsySettled.value;
-    } else {
-      console.error(`[runSearch] Etsy failed for ${searchId}:`, etsySettled.reason);
-    }
   } else {
     console.warn(`[runSearch] no query available for ${searchId} — skipping eBay/Etsy.`);
   }
