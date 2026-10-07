@@ -14,4 +14,6 @@ export interface FindResult {
   url: string;
   aspect: number;
   saved: boolean;
+  matchScore?: number;
+  matchReasons?: string[];
 }

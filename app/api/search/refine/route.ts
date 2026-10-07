@@ -5,6 +5,7 @@ import { connectToDatabase } from '@/lib/db';
 import { Search } from '@/lib/models';
 import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import { runSearch } from '@/lib/search/runSearch';
+import { prepareImage } from '@/lib/search/imageSignals';
 import { checkSearchRateLimit } from '@/lib/rateLimit/checkSearchRateLimit';
 
 export const dynamic = 'force-dynamic';
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           ok: false,
-          message: "You've made a lot of searches very quickly \u2014 try again in a few hours.",
+          message: "You've made a lot of searches very quickly — try again in a few hours.",
         },
         { status: 429 }
       );
@@ -125,11 +126,26 @@ export async function POST(request: Request) {
         );
       }
 
-      const extension = file.name.split('.').pop() || 'jpg';
-      const blobPath = `hunts/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
-      const blob = await put(blobPath, file, { access: 'public', contentType: file.type });
+      // Same privacy + quality handling as the first upload (see /api/upload).
+      const prepared = await prepareImage(file);
+      if (!prepared.stripped && prepared.signals.hadLocation) {
+        return NextResponse.json(
+          {
+            ok: false,
+            message: "We couldn't process that photo's format — try a JPEG or PNG version.",
+          },
+          { status: 400 }
+        );
+      }
+
+      const blobPath = `hunts/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${prepared.extension}`;
+      const blob = await put(blobPath, prepared.body, {
+        access: 'public',
+        contentType: prepared.contentType,
+      });
 
       search.images.push(blob.url);
+      search.imageSignals.push({ url: blob.url, ...prepared.signals });
     }
 
     if (hint) {
@@ -153,7 +169,7 @@ export async function POST(request: Request) {
     const message =
       err instanceof Error && /querySrv|ETIMEOUT|ENOTFOUND|ECONNREFUSED/.test(err.message)
         ? 'Could not reach the database. Check MONGODB_URI and your network connection.'
-        : 'That refine didn\u2019t go through. Try again in a moment.';
+        : 'That refine didn’t go through. Try again in a moment.';
     return NextResponse.json({ ok: false, message }, { status: 500 });
   }
 }

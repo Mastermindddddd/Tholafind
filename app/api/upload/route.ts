@@ -6,6 +6,7 @@ import { Search } from '@/lib/models';
 import { generateUniqueReference } from '@/lib/generateReference';
 import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import { runSearch } from '@/lib/search/runSearch';
+import { prepareImage } from '@/lib/search/imageSignals';
 import { checkSearchRateLimit } from '@/lib/rateLimit/checkSearchRateLimit';
 
 export const dynamic = 'force-dynamic';
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           ok: false,
-          message: "You've made a lot of searches very quickly \u2014 try again in a few hours.",
+          message: "You've made a lot of searches very quickly — try again in a few hours.",
         },
         { status: 429 }
       );
@@ -132,18 +133,32 @@ export async function POST(request: Request) {
       );
     }
 
-    const extension = file.name.split('.').pop() || 'jpg';
-    const blobPath = `hunts/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+    // Reads camera metadata, strips EXIF (incl. GPS) from the stored copy,
+    // and checks blur / resolution / exposure. The blob URL is public, so we
+    // refuse to store a copy that still carries location data.
+    const prepared = await prepareImage(file);
+    if (!prepared.stripped && prepared.signals.hadLocation) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "We couldn't process that photo's format — try a JPEG or PNG version.",
+        },
+        { status: 400 }
+      );
+    }
 
-    const blob = await put(blobPath, file, {
+    const blobPath = `hunts/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${prepared.extension}`;
+
+    const blob = await put(blobPath, prepared.body, {
       access: 'public',
-      contentType: file.type,
+      contentType: prepared.contentType,
     });
 
     const reference = await generateUniqueReference();
     const search = await Search.create({
       userId: user?._id,
       images: [blob.url],
+      imageSignals: [{ url: blob.url, ...prepared.signals }],
       hint,
       status: 'pending',
       reference,

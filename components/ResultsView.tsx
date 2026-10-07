@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import ResultCard from '@/components/ResultCard';
 import RefineSearchPanel from '@/components/RefineSearchPanel';
 import AskFindersButton from '@/components/AskFindersButton';
+import MatchDiagnosis from '@/components/MatchDiagnosis';
 import { FindResult, SourceKind } from '@/lib/types';
 import { Users, SlidersHorizontal } from 'lucide-react';
 
@@ -24,6 +25,12 @@ interface ResultsViewProps {
   imageCount: number;
   results: FindResult[];
   communityRequestId: string | null;
+  /** Why the best match is weak, and which details would help. Null when the match is strong. */
+  diagnosis: {
+    explanation: string;
+    missing: ('brand' | 'tag' | 'material' | 'color' | 'angle')[];
+  } | null;
+  hint: string | null;
 }
 
 export default function ResultsView({
@@ -34,6 +41,8 @@ export default function ResultsView({
   imageCount,
   results,
   communityRequestId,
+  diagnosis,
+  hint,
 }: ResultsViewProps) {
   const [active, setActive] = useState<FilterKey>('all');
 
@@ -82,7 +91,7 @@ export default function ResultsView({
               {results.length > 0
                 ? `${results.length} leads found across ${sourceCount} sources`
                 : status === 'pending' || status === 'searching'
-                  ? 'Searching now\u2026'
+                  ? 'Searching now…'
                   : 'No leads found this time'}
             </h1>
             <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
@@ -90,7 +99,7 @@ export default function ResultsView({
                 ? 'Sorted by how closely each result matches your photo. Save anything worth tracking, and escalate the uncertain ones to the community below.'
                 : status === 'pending' || status === 'searching'
                   ? 'Sorted by how closely each result matches your photo, as soon as they come in.'
-                  : 'None of the connected sources turned up a match \u2014 try a clearer photo, or hand this one to the community.'}
+                  : 'None of the connected sources turned up a match — try a clearer photo, or hand this one to the community.'}
             </p>
           </div>
         </div>
@@ -112,6 +121,18 @@ export default function ResultsView({
           ))}
         </div>
       </section>
+
+      {diagnosis && status !== 'pending' && status !== 'searching' && (
+        <section className="mx-auto mt-8 max-w-7xl px-5 sm:px-8">
+          <MatchDiagnosis
+            searchId={searchId}
+            explanation={diagnosis.explanation}
+            missing={diagnosis.missing}
+            imageCount={imageCount}
+            existingHint={hint}
+          />
+        </section>
+      )}
 
       {needsRefine && (
         <section className="mx-auto mt-8 max-w-7xl px-5 sm:px-8">

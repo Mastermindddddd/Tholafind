@@ -68,6 +68,10 @@ export default async function ResultsPage({ params }: PageProps) {
       // improves. "See price on site" reads as a next step, not a dead end.
       price: doc.price || 'See price on site',
       confidence: doc.confidence,
+      // Undefined for searches run before match scoring existed — the UI
+      // shows no percentage for those instead of inventing one.
+      matchScore: typeof doc.matchScore === 'number' ? doc.matchScore : undefined,
+      matchReasons: doc.matchReasons ?? [],
       image: doc.image,
       url: doc.url,
       // Real provider responses don't consistently include image dimensions
@@ -81,8 +85,22 @@ export default async function ResultsPage({ params }: PageProps) {
     }))
     .sort(
       (a, b) =>
-        CONFIDENCE_RANK[a.confidence] - CONFIDENCE_RANK[b.confidence]
+        CONFIDENCE_RANK[a.confidence] - CONFIDENCE_RANK[b.confidence] ||
+        (b.matchScore ?? 0) - (a.matchScore ?? 0)
     );
+
+  const diagnosis = search.diagnosis
+    ? {
+        explanation: search.diagnosis.explanation,
+        missing: (search.diagnosis.missing ?? []) as (
+          | 'brand'
+          | 'tag'
+          | 'material'
+          | 'color'
+          | 'angle'
+        )[],
+      }
+    : null;
 
   return (
     <div className="min-h-screen bg-paper paper-texture">
@@ -95,6 +113,8 @@ export default async function ResultsPage({ params }: PageProps) {
         imageCount={search.images.length}
         results={results}
         communityRequestId={existingCommunityRequest ? String(existingCommunityRequest._id) : null}
+        diagnosis={diagnosis}
+        hint={search.hint ?? null}
       />
       <Footer />
     </div>

@@ -1,5 +1,40 @@
 import { Schema, model, models, Types, type InferSchemaType, type Model } from 'mongoose';
 
+// What we know about one uploaded photo beyond its pixels (see lib/search/imageSignals.ts).
+// GPS coordinates are deliberately never stored, only whether the original had any.
+const ImageSignalSchema = new Schema(
+  {
+    url: { type: String, required: true },
+    analyzed: { type: Boolean, default: false },
+    brand: { type: String, trim: true },
+    tagText: { type: [String], default: [] },
+    modelCodes: { type: [String], default: [] },
+    material: { type: String, trim: true },
+    color: { type: String, trim: true },
+    itemType: { type: String, trim: true },
+    designCues: { type: [String], default: [] },
+    quality: { type: String, enum: ['good', 'fair', 'poor'], default: 'good' },
+    qualityIssues: { type: [String], default: [] },
+    exif: {
+      type: new Schema(
+        { make: String, model: String, takenAt: String },
+        { _id: false }
+      ),
+    },
+    hadLocation: { type: Boolean },
+  },
+  { _id: false }
+);
+
+// Why the best match is weak and which details would help most.
+const DiagnosisSchema = new Schema(
+  {
+    explanation: { type: String, required: true },
+    missing: { type: [String], enum: ['brand', 'tag', 'material', 'color', 'angle'], default: [] },
+  },
+  { _id: false }
+);
+
 const SearchSchema = new Schema(
   {
     // Optional so anonymous, logged-out searches still work (Phase 1 principle:
@@ -23,6 +58,12 @@ const SearchSchema = new Schema(
     // The embedding vector generated in Phase 3, indexed via Atlas Vector Search
     // (created out-of-band in the Atlas UI / API, not through Mongoose).
     embedding: { type: [Number], select: false },
+
+    // Per-photo extracted signals: tag text, brand, material, design cues, quality, EXIF summary.
+    imageSignals: { type: [ImageSignalSchema], default: [] },
+
+    // Set by runSearch when the best match is weak; cleared when a rerun finds a strong one.
+    diagnosis: { type: DiagnosisSchema },
 
     status: {
       type: String,
