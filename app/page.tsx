@@ -550,7 +550,7 @@ export default function HomePage() {
             "
           >
             Tholafind is coming to mobile. Snap something wherever you are,
-            start a hunt in seconds, and keep searching even when you're
+            start a hunt in seconds, and keep searching even when you&apos;re
             away from your desk.
           </p>
         </div>
