@@ -14,7 +14,6 @@ import {
   RefreshCw,
   Search,
 } from 'lucide-react';
-
 const steps = [
   {
     tag: 'Specimen 01',
@@ -32,7 +31,6 @@ const steps = [
     body: 'When the trail goes cold, hand it to people who are good at this. No dead ends, just a different kind of search.',
   },
 ];
-
 const features = [
   {
     icon: Layers,
@@ -55,29 +53,31 @@ const features = [
     body: 'Every search is saved automatically, and you can watch a hunt for updates - we’ll check daily and tell you about a new listing or a price drop. Come back in a month and pick up exactly where you left off.',
   },
 ];
-
 export default function HomePage() {
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-paper paper-texture">
       <Navbar />
-
       {/* =========================================================
           HERO
       ========================================================= */}
 <section
   className="
     relative
+    flex
+    h-[calc(100dvh-4rem)]
+    min-h-[calc(100svh-4rem)]
     w-full
+    items-center
     overflow-hidden
     bg-paper
-    py-6
-    sm:py-8
-    lg:py-10
+    py-3
+    sm:py-4
+    lg:py-5
+    xl:py-6
   "
 >
   {/* Paper texture */}
   <div className="pointer-events-none absolute inset-0 opacity-[0.35] paper-texture" />
-
   {/* Very subtle grid */}
   <div
     className="pointer-events-none absolute inset-0 opacity-[0.025]"
@@ -87,11 +87,9 @@ export default function HomePage() {
       backgroundSize: '42px 42px',
     }}
   />
-
   {/* =====================================================
       DECORATIVE PRODUCT PHOTO — TOP LEFT
   ===================================================== */}
-
 <div
   className="
     pointer-events-none absolute
@@ -101,7 +99,8 @@ export default function HomePage() {
     rounded-sm bg-white p-1
     shadow-[0_6px_14px_rgba(0,0,0,0.12)]
     sm:left-[-25px] sm:top-5 sm:w-24 sm:p-1.5
-    lg:left-8 lg:top-8 lg:w-52 lg:p-2
+    lg:left-[clamp(1rem,3.2vw,3rem)] lg:top-[clamp(1.25rem,3vh,2rem)] lg:w-[clamp(8.5rem,11.5vw,13rem)] lg:p-2
+    
     lg:shadow-[0_12px_30px_rgba(0,0,0,0.12)]
   "
 >
@@ -113,7 +112,6 @@ export default function HomePage() {
     />
   </div>
 </div>
-
   {/* Top-left handwritten note */}
  <div className="pointer-events-none absolute left-[10%] top-16 hidden rotate-[-8deg] sm:block lg:left-[18%] lg:top-20">
   <p className="font-display text-xs italic text-inkSoft sm:text-sm lg:text-lg">
@@ -137,7 +135,6 @@ export default function HomePage() {
       />
     </svg>
   </div>
-
 {/* DECORATIVE PRODUCT PHOTO — LEFT */}
 <div
   className="
@@ -149,9 +146,9 @@ export default function HomePage() {
     rounded-sm bg-white p-1
     shadow-[0_6px_14px_rgba(0,0,0,0.10)]
     sm:left-[-18px] sm:w-20 sm:p-1.5
-    lg:left-[-20px] lg:w-44 lg:p-2
+    lg:left-[clamp(-1.25rem,-1vw,-0.5rem)] lg:w-[clamp(7rem,10vw,11rem)] lg:p-2
     lg:shadow-[0_12px_30px_rgba(0,0,0,0.10)]
-    xl:left-12
+    xl:left-[clamp(1.5rem,4vw,4rem)]
   "
 >
   <div className="aspect-[4/3] overflow-hidden">
@@ -162,7 +159,6 @@ export default function HomePage() {
     />
   </div>
 </div>
-
   {/* DECORATIVE PRODUCT PHOTO — BOTTOM LEFT */}
 <div
   className="
@@ -173,7 +169,7 @@ export default function HomePage() {
     rounded-sm bg-white p-1
     shadow-[0_6px_14px_rgba(0,0,0,0.10)]
     sm:w-16 sm:p-1.5
-    xl:bottom-[-20px] xl:left-[7%] xl:w-40 xl:p-2
+    lg:bottom-[clamp(-1.25rem,-1vh,0.25rem)] lg:left-[clamp(2%,5vw,7%)] lg:w-[clamp(7rem,9vw,10rem)] lg:p-2
     xl:shadow-[0_12px_30px_rgba(0,0,0,0.10)]
   "
 >
@@ -185,11 +181,9 @@ export default function HomePage() {
     />
   </div>
 </div>
-
   {/* =====================================================
       DECORATIVE PRODUCT PHOTO — TOP RIGHT
   ===================================================== */}
-
 <div
   className="
     pointer-events-none absolute
@@ -199,7 +193,8 @@ export default function HomePage() {
     rounded-sm bg-white p-1
     shadow-[0_6px_14px_rgba(0,0,0,0.12)]
     sm:right-[-18px] sm:top-5 sm:w-20 sm:p-1.5
-    lg:right-[-35px] lg:top-10 lg:w-52 lg:p-2
+    lg:right-[clamp(-2.2rem,-3vw,-1rem)] lg:top-[clamp(1.25rem,3vh,2rem)] lg:w-[clamp(8.5rem,11.5vw,13rem)] lg:p-2
+    
     lg:shadow-[0_12px_30px_rgba(0,0,0,0.12)]
     xl:right-8
   "
@@ -212,14 +207,13 @@ export default function HomePage() {
     />
   </div>
 </div>
-
   {/* =====================================================
       RIGHT HANDWRITTEN NOTE
   ===================================================== */}
   <div
     className="
       pointer-events-none absolute
-      right-[17%] top-[39%]
+      right-[clamp(7%,13vw,17%)] top-[clamp(35%,39vh,43%)]
       hidden
       rotate-[5deg]
       lg:block
@@ -229,21 +223,19 @@ export default function HomePage() {
       <Search
         size={24}
         strokeWidth={1.5}
-        className="mt-1 text-brick"
+        className="mt-1 h-[clamp(18px,1.8vw,24px)] w-[clamp(18px,1.8vw,24px)] text-brick"
       />
-
-      <p className="font-display text-lg italic leading-tight text-inkSoft">
+      <p className="font-display text-[clamp(0.9rem,1.4vw,1.15rem)] italic leading-tight text-inkSoft">
         We search
         <br />
         everywhere.
       </p>
     </div>
-
     <svg
       width="90"
       height="45"
       viewBox="0 0 90 45"
-      className="ml-2"
+      className="ml-2 h-auto w-[clamp(3.5rem,6vw,5rem)]"
     >
       <path
         d="M8 5C25 15 45 30 82 35"
@@ -262,7 +254,6 @@ export default function HomePage() {
       />
     </svg>
   </div>
-
  {/* DECORATIVE PRODUCT PHOTO — RIGHT */}
 <div
   className="
@@ -274,9 +265,9 @@ export default function HomePage() {
     rounded-sm bg-white p-1
     shadow-[0_6px_14px_rgba(0,0,0,0.10)]
     sm:right-[-18px] sm:w-20 sm:p-1.5
-    lg:right-[-20px] lg:w-44 lg:p-2
+    lg:right-[clamp(-1.25rem,-1vw,-0.5rem)] lg:w-[clamp(7rem,10vw,11rem)] lg:p-2
     lg:shadow-[0_12px_30px_rgba(0,0,0,0.10)]
-    xl:right-12
+    xl:right-[clamp(1.5rem,4vw,4rem)]
   "
 >
   <div className="aspect-[4/3] overflow-hidden">
@@ -287,7 +278,6 @@ export default function HomePage() {
     />
   </div>
 </div>
-
   {/* =====================================================
       MAIN CENTER CONTENT
   ===================================================== */}
@@ -295,7 +285,9 @@ export default function HomePage() {
   className="
     relative z-10
     mx-auto flex
-    w-full max-w-4xl
+    h-full
+    w-[min(92vw,64rem)] max-w-none
+    min-h-0
     flex-col items-center
     justify-center
     px-5
@@ -304,41 +296,35 @@ export default function HomePage() {
   "
 >
   {/* Brand */}
-<div className="font-display text-lg font-semibold tracking-[-0.04em] text-pine sm:text-xl md:text-2xl">
+<div className="font-display text-[clamp(1rem,1.6vw,1.5rem)] font-semibold tracking-[-0.04em] text-pine">
   Tholafind
 </div>
-
 {/* Small label */}
-<div className="mt-1.5 flex items-center gap-1.5 sm:gap-2">
-  <span className="h-px w-4 bg-pine/30 sm:w-5" />
-  <span className="font-mono text-[0.46rem] uppercase tracking-[0.14em] text-inkSoft sm:text-[0.52rem] sm:tracking-[0.16em]">
-    Find the things you can&apos;t find
+<div className="mt-[clamp(0.35rem,0.6vh,0.65rem)] flex items-center gap-[clamp(0.35rem,0.6vw,0.5rem)]">
+  <span className="h-px w-[clamp(1rem,1.8vw,1.4rem)] bg-pine/30" />
+  <span className="font-mono text-[clamp(0.46rem,0.55vw,0.55rem)] uppercase tracking-[0.14em] text-inkSoft">
+    Find the things you can't find
   </span>
-  <span className="h-px w-4 bg-pine/30 sm:w-5" />
+  <span className="h-px w-[clamp(1rem,1.8vw,1.4rem)] bg-pine/30" />
 </div>
-
 {/* Main heading */}
-<h1 className="mt-2 font-display text-[1.65rem] font-semibold leading-[1.08] tracking-[-0.035em] text-pine sm:text-4xl md:text-[2.9rem] lg:text-[3.3rem]">
-  Snap it. <span className="italic text-brick">We&rsquo;ll find it.</span>
+<h1 className="mt-[clamp(0.45rem,1vh,0.75rem)] font-display text-[clamp(1.65rem,min(4.2vw,7vh),3.3rem)] font-semibold leading-[1.02] tracking-[-0.035em] text-pine">
+  Snap it. <span className="italic text-brick">We’ll find it.</span>
 </h1>
-
 {/* Hand-drawn underline */}
 <div className="relative mt-1.5">
   <div className="h-[2.5px] w-24 rotate-[-1deg] rounded-full bg-brass sm:h-[3px] sm:w-44" />
-  <span className="absolute -right-4 -top-2 text-sm text-brass sm:-right-5 sm:-top-2.5 sm:text-lg">✦</span>
+  <span className="absolute -right-[clamp(0.8rem,1.4vw,1.25rem)] -top-[clamp(0.45rem,0.8vh,0.65rem)] text-[clamp(0.8rem,1.2vw,1.15rem)] text-brass">✦</span>
 </div>
-
 {/* Description */}
-<p className="mt-2.5 max-w-[38ch] text-[0.68rem] leading-[1.15rem] text-inkSoft sm:max-w-lg sm:text-[0.8rem] sm:leading-5 md:text-[0.85rem]">
-  Upload a photo of anything you can&rsquo;t find, and we&rsquo;ll search retail, marketplaces
+<p className="mt-[clamp(0.45rem,1vh,0.75rem)] max-w-[min(38ch,90vw)] text-[clamp(0.68rem,min(1vw,1.8vh),0.85rem)] leading-[clamp(1rem,2.2vh,1.3rem)] text-inkSoft">
+  Upload a photo of anything you can’t find, and we’ll search retail, marketplaces
   and resale - with real people ready to help when the trail goes cold.
 </p>
-
   {/* CENTERED UPLOAD */}
-  <div className="relative mt-3 flex w-full justify-center sm:mt-4">
+  <div className="relative mt-[clamp(0.55rem,1.4vh,1rem)] flex w-full max-w-[clamp(18rem,40vw,34rem)] justify-center">
     <UploadDropzone />
   </div>
-
   {/* SEARCH SOURCES */}
   {/*<div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:mt-4 sm:gap-x-6">
   <div className="flex items-center gap-1 text-pine sm:gap-1.5">
@@ -370,41 +356,37 @@ export default function HomePage() {
   </div>
 </div>*/}
 </div>
-
   {/* =====================================================
       BOTTOM RIGHT DARK PAPER SHAPE
   ===================================================== */}
   <div
     className="
       pointer-events-none absolute
-      -bottom-20 -right-20
+      -bottom-[clamp(3rem,7vh,5rem)] -right-[clamp(3rem,7vw,5rem)]
       hidden
-      h-40 w-80
+      h-[clamp(8rem,16vh,10rem)] w-[clamp(16rem,30vw,20rem)]
       rotate-[-5deg]
       bg-pine
       lg:block
     "
   />
-
   <div
     className="
       pointer-events-none absolute
-      bottom-5 right-10
+      bottom-[clamp(1.5rem,4vh,2rem)] right-[clamp(1.5rem,4vw,2.5rem)]
       hidden
       rotate-[-5deg]
       lg:block
     "
   >
-    <p className="font-display text-base italic text-paper">
+    <p className="font-display text-[clamp(0.8rem,1.2vw,1rem)] italic text-paper">
       Real people.
       <br />
       Real finds.
     </p>
-
-    <div className="mt-1 h-[3px] w-20 rotate-[-2deg] bg-brass" />
+    <div className="mt-1 h-[2px] w-[clamp(4rem,6vw,5rem)] rotate-[-2deg] bg-brass" />
   </div>
 </section>
-
       {/* =========================================================
           HOW IT WORKS
       ========================================================= */}
@@ -416,7 +398,6 @@ export default function HomePage() {
         How a hunt works
       </p>
     </div>
-
     <h2 className="mt-3 font-display text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
       Three steps.{' '}
       <span className="relative italic text-pine">
@@ -425,7 +406,6 @@ export default function HomePage() {
       </span>
     </h2>
   </div>
-
   <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
     {steps.map((s, i) => (
       <div
@@ -436,16 +416,12 @@ export default function HomePage() {
           transition-transform hover:rotate-0
         `}
       >
-        
-
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-brass sm:text-[0.65rem]">
           {s.tag}
         </p>
-
         <h3 className="mt-3 font-display text-lg font-semibold leading-tight text-ink sm:text-xl">
           {s.title}
         </h3>
-
         <p className="mt-2.5 text-[0.84rem] leading-relaxed text-inkSoft sm:text-[0.9rem]">
           {s.body}
         </p>
@@ -453,7 +429,6 @@ export default function HomePage() {
     ))}
   </div>
 </section>
-
       {/* =========================================================
           FEATURES
       ========================================================= */}
@@ -465,16 +440,13 @@ export default function HomePage() {
           Why not just use Lens
         </p>
       </div>
-
       <h2 className="mt-2 font-display text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
         Built for the searches that come up empty everywhere else.
       </h2>
-
       <p className="mt-1 font-display text-sm italic text-inkSoft sm:text-base">
-        We&rsquo;ve been there too.
+        We’ve been there too.
       </p>
     </div>
-
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
       {features.map((f, i) => (
         <div
@@ -488,15 +460,12 @@ export default function HomePage() {
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-pine text-brassLight">
             <f.icon size={16} />
           </span>
-
           <h3 className="mt-4 font-display text-base font-semibold leading-tight text-ink sm:text-[1.05rem]">
             {f.title}
           </h3>
-
           <p className="mt-2 text-[0.82rem] leading-relaxed text-inkSoft sm:text-[0.85rem]">
             {f.body}
           </p>
-
           {/* subtle corner fold, like a worn card */}
           <span className="pointer-events-none absolute bottom-0 right-0 h-5 w-5 bg-paperDim [clip-path:polygon(100%_0,100%_100%,0_100%)]" />
         </div>
@@ -523,7 +492,6 @@ export default function HomePage() {
     >
       {/* Subtle texture */}
       <div className="paper-texture absolute inset-0 opacity-[0.06]" />
-
       {/* Decorative circles */}
       <div
         className="
@@ -534,7 +502,6 @@ export default function HomePage() {
           sm:h-64 sm:w-64
         "
       />
-
       <div
         className="
           pointer-events-none absolute
@@ -544,7 +511,6 @@ export default function HomePage() {
           sm:h-64 sm:w-64
         "
       />
-
       <div
         className="
           relative z-10
@@ -563,7 +529,6 @@ export default function HomePage() {
           <span className="inline-flex items-center gap-1.5 rounded-full border border-brassLight/30 bg-brassLight/5 px-3 py-1.5 font-mono text-[0.58rem] uppercase tracking-[0.12em] text-brassLight sm:text-[0.65rem] sm:tracking-[0.14em]">
   <span className="text-brassLight">✦</span> Coming soon
 </span>
-
 <h2 className="mt-4 font-display text-2xl font-semibold leading-tight tracking-tight text-paper sm:text-3xl md:text-4xl lg:text-[2.7rem]">
   Your next hunt,
   <br className="hidden sm:block" />
@@ -572,7 +537,6 @@ export default function HomePage() {
     <span className="absolute -bottom-1 left-0 h-[2px] w-full rotate-[-1deg] rounded-full bg-brassLight/50" />
   </span>
 </h2>
-
           <p
             className="
               mx-auto
@@ -586,11 +550,10 @@ export default function HomePage() {
             "
           >
             Tholafind is coming to mobile. Snap something wherever you are,
-            start a hunt in seconds, and keep searching even when you&apos;re
+            start a hunt in seconds, and keep searching even when you're
             away from your desk.
           </p>
         </div>
-
 {/* App Store / Google Play Badges */}
 <div
   className="
@@ -601,18 +564,15 @@ export default function HomePage() {
     lg:shrink-0
   "
 >
-  
   {/* Coming Soon */}
   <div className="text-center">
     <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-paper/50">
       Coming soon
     </p>
-
     <p className="mt-1 font-display text-sm font-medium text-paper sm:text-base">
       Tholafind on mobile
     </p>
   </div>
-
   {/* Store Badges */}
   <div
     className="
@@ -646,7 +606,6 @@ export default function HomePage() {
       >
         <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.1.8 1.21-.25 2.37-.93 3.66-.84 1.55.13 2.72.74 3.5 1.8-3.2 1.92-2.44 6.13.5 7.9-.59 1.55-1.36 3.08-2.76 4.27zM12.05 7.25C11.9 4.94 13.77 3.05 15.92 2.9c.3 2.66-2.4 4.64-3.87 4.35z" />
       </svg>
-
       <div className="text-left leading-none">
         {/*<p className="font-mono text-[0.48rem] uppercase tracking-wide text-paper/55">
           Coming soon on
@@ -656,7 +615,6 @@ export default function HomePage() {
         </p>
       </div>
     </div>
-
     {/* Google Play */}
     <div
       className="
@@ -694,7 +652,6 @@ export default function HomePage() {
           d="M16.8 8.43 4.36 1.36C3.6.93 2.92.98 2.5 1.43L13.2 10l3.6-1.57z"
         />
       </svg>
-
       <div className="text-left leading-none">
         {/* <p className="font-mono text-[0.48rem] uppercase tracking-wide text-paper/55">
           Coming soon on
@@ -706,12 +663,10 @@ export default function HomePage() {
     </div>
   </div>
 </div>
-
       </div>
     </div>
   </div>
 </section>
-
       {/* =========================================================
           PRICING
       ========================================================= */}
@@ -722,51 +677,42 @@ export default function HomePage() {
         <ShieldCheck size={13} />
         No surprise paywalls
       </span>
-
       <h2 className="mt-4 font-display text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
         You see a real result before we ever ask for a card.
       </h2>
-
       <p className="mt-3 max-w-lg text-[0.85rem] leading-relaxed text-inkSoft sm:text-[0.92rem]">
         Every hunt starts free, and free means a real search across retail, resale, and vintage
         - not a locked screen after your first upload. Search itself is unlimited on every plan.
       </p>
-
       <p className="mt-2 font-display text-sm italic text-brick sm:text-base">
         Plus just removes the limits.
       </p>
     </div>
-
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {/* Free */}
       <div className="relative rotate-[-0.5deg] rounded-md border border-line bg-paper p-5 transition-transform hover:rotate-0">
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-inkSoft">Free</p>
         <p className="mt-2 font-display text-2xl font-semibold text-ink">$0</p>
-
         <ul className="mt-4 space-y-2 text-[0.8rem] leading-relaxed text-inkSoft sm:text-[0.82rem]">
           <li>Unlimited photo searches</li>
-          <li>Retail, resale &amp; vintage results</li>
+          <li>Retail, resale & vintage results</li>
           <li>3 collections</li>
           <li>2 community requests / month</li>
           <li>Watch 1 hunt for updates</li>
         </ul>
       </div>
-
       {/* Plus */}
       <div className="relative rotate-[0.5deg] rounded-md border border-brass bg-paper p-5 transition-transform hover:rotate-0">
         <span className="absolute -top-2.5 -right-2 text-base text-brass">✦</span>
-
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-brick">Plus</p>
         <p className="mt-2 font-display text-2xl font-semibold text-ink">
           $5<span className="text-sm font-normal text-inkSoft">/mo</span>
         </p>
-
         <ul className="mt-4 space-y-2 text-[0.8rem] leading-relaxed text-inkSoft sm:text-[0.82rem]">
           <li>Unlimited collections</li>
           <li>Unlimited community requests</li>
           <li>Watch unlimited hunts for updates</li>
         </ul>
-
         <div className="mt-4">
           <UpgradeButton label="Get Plus" />
         </div>
@@ -774,7 +720,6 @@ export default function HomePage() {
     </div>
   </div>
 </section>
-
       <Footer />
     </div>
   );
