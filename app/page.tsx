@@ -303,13 +303,13 @@ export default function HomePage() {
 <div className="mt-[clamp(0.35rem,0.6vh,0.65rem)] flex items-center gap-[clamp(0.35rem,0.6vw,0.5rem)]">
   <span className="h-px w-[clamp(1rem,1.8vw,1.4rem)] bg-pine/30" />
   <span className="font-mono text-[clamp(0.46rem,0.55vw,0.55rem)] uppercase tracking-[0.14em] text-inkSoft">
-    Find the things you can't find
+    Find the things you can&apos;t find
   </span>
   <span className="h-px w-[clamp(1rem,1.8vw,1.4rem)] bg-pine/30" />
 </div>
 {/* Main heading */}
 <h1 className="mt-[clamp(0.45rem,1vh,0.75rem)] font-display text-[clamp(1.65rem,min(4.2vw,7vh),3.3rem)] font-semibold leading-[1.02] tracking-[-0.035em] text-pine">
-  Snap it. <span className="italic text-brick">We’ll find it.</span>
+  Snap it. <span className="italic text-brick">We&apos;ll find it.</span>
 </h1>
 {/* Hand-drawn underline */}
 <div className="relative mt-1.5">
@@ -318,7 +318,7 @@ export default function HomePage() {
 </div>
 {/* Description */}
 <p className="mt-[clamp(0.45rem,1vh,0.75rem)] max-w-[min(38ch,90vw)] text-[clamp(0.68rem,min(1vw,1.8vh),0.85rem)] leading-[clamp(1rem,2.2vh,1.3rem)] text-inkSoft">
-  Upload a photo of anything you can’t find, and we’ll search retail, marketplaces
+  Upload a photo of anything you can&apos;t find, and we&apos;ll search retail, marketplaces
   and resale - with real people ready to help when the trail goes cold.
 </p>
   {/* CENTERED UPLOAD */}
@@ -444,7 +444,7 @@ export default function HomePage() {
         Built for the searches that come up empty everywhere else.
       </h2>
       <p className="mt-1 font-display text-sm italic text-inkSoft sm:text-base">
-        We’ve been there too.
+        We&apos;ve been there too.
       </p>
     </div>
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
