@@ -3,16 +3,17 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ResultCard from '@/components/ResultCard';
 import { connectToDatabase } from '@/lib/db';
-import { getCuratedResults } from '@/lib/browse/getCuratedResults';
+import { getBrowseFeed } from '@/lib/browse/getCuratedResults';
 import { toFindResultFromDiscoveryItem } from '@/lib/browse/toFindResult';
 import { getSavedResultIds } from '@/lib/getSavedResultIds';
 import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import { Compass } from 'lucide-react';
 
-// Content only changes once a day via the discovery cron, which calls
-// revalidatePath('/browse') itself right after ingesting — so this is a
-// safety-net revalidation window, not the only thing keeping it fresh.
-export const revalidate = 86400;
+// Rendered per request: the feed is reordered every day AND tailored to the
+// signed-in user's own hunts and saves, so it can't be one shared static page.
+// (The discovery cron's revalidatePath('/browse') call is harmless but no
+// longer needed.)
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Browse real finds - Tholafind',
@@ -30,9 +31,9 @@ const categories = [
 export default async function BrowsePage() {
   await connectToDatabase();
 
-  const results = await getCuratedResults({ limit: 60 });
-
   const user = await getOrCreateUser();
+  const { items: results, personalized } = await getBrowseFeed({ limit: 60, userId: user?._id });
+
   const savedResultIds = await getSavedResultIds(
     user?._id,
     results.map((r) => r._id),
@@ -47,14 +48,15 @@ export default async function BrowsePage() {
 
       <section className="mx-auto max-w-7xl px-5 pt-10 sm:px-8">
         <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">
-          The specimen log
+          {personalized ? 'Picked for you' : 'The specimen log'}
         </p>
         <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
           Real things, actually found.
         </h1>
         <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
-          A fresh pull from across the web every day - not a demo, not a mockup. Tap the heart
-          on anything to save it to your own collection.
+          {personalized
+            ? 'Tuned to your hunts and saves, mixed with today’s popular finds. A fresh pull every day — tap the heart on anything to save it.'
+            : 'A fresh pull from across the web every day - not a demo, not a mockup. Tap the heart on anything to save it to your own collection.'}
         </p>
 
         <nav className="mt-6 flex flex-wrap gap-2">

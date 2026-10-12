@@ -2,6 +2,7 @@
 import type { Types } from 'mongoose';
 import type { SearchResultDoc, DiscoveryItemDoc } from '@/lib/models';
 import type { FindResult } from '@/lib/types';
+import { cleanPriceDisplay } from '@/lib/search/priceSanity';
 
 export function toFindResultFromSearchResult(
   doc: SearchResultDoc & { _id: Types.ObjectId },
@@ -13,8 +14,10 @@ export function toFindResultFromSearchResult(
     title: doc.title,
     source: doc.source,
     sourceKind: doc.sourceKind,
-    price: doc.price || 'See price on site',
+    price: cleanPriceDisplay(doc.price) || 'See price on site',
     confidence: doc.confidence,
+    matchScore: typeof doc.matchScore === 'number' ? doc.matchScore : undefined,
+    matchReasons: doc.matchReasons ?? [],
     image: doc.image,
     url: doc.url,
     aspect: 1,
@@ -32,7 +35,7 @@ export function toFindResultFromDiscoveryItem(
     title: doc.title,
     source: doc.source,
     sourceKind: doc.sourceKind,
-    price: doc.price,
+    price: cleanPriceDisplay(doc.price) || 'See price on site',
     confidence: 'exact',
     image: doc.image,
     url: doc.url,

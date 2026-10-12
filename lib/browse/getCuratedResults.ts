@@ -1,42 +1,39 @@
 import 'server-only';
-import crypto from 'crypto';
 import { Types } from 'mongoose';
 import { DiscoveryItem, type DiscoveryItemDoc, SearchResult, type SearchResultDoc } from '@/lib/models';
+import { rankFeed } from './rankFeed';
+import { getUserInterests } from './getUserInterests';
 
 interface GetCuratedResultsOptions {
   sourceKind?: 'retail' | 'resale' | 'vintage';
   limit?: number;
   excludeId?: string;
+  /** When given and the user has history, the feed is tailored to them. */
+  userId?: Types.ObjectId | string | null;
 }
 
 function todayKey(): string {
   return new Date().toISOString().slice(0, 10); // YYYY-MM-DD, UTC
 }
 
-/** Deterministic per-item, per-day rank — same order for every visitor
- * today, different order tomorrow. Cheaper than storing a shuffle. */
-function dailyRank(id: string): number {
-  const hash = crypto.createHash('sha1').update(`${todayKey()}:${id}`).digest('hex');
-  return parseInt(hash.slice(0, 8), 16);
-}
-
 /**
  * Powers the public /browse feed from daily-ingested DiscoveryItem docs —
- * not from user searches. "Smart" here is three cheap decisions:
+ * not from user searches.
  *
- *   1. Active only — DiscoveryItem.price is schema-required, so this is
- *      really just the `active` filter (stale items retired by the
- *      ingest job's 14-day cutoff).
- *   2. A diversity cap of 3 per category, so one heavily-stocked category
- *      doesn't dominate.
- *   3. A date-seeded deterministic order instead of pure recency — every
- *      visitor sees the same "today's drop" sequence, with saveCount
- *      nudging popular items up within that.
+ *   1. Active only (stale items are retired by the ingest job's 14-day cutoff).
+ *   2. A wide pool (up to 1,500 of the newest items), not just the latest few
+ *      hundred, so the daily reshuffle has real variety to draw from.
+ *   3. Ranked by rankFeed.ts: a per-day shuffle (new order every day, same
+ *      for everyone), real popularity from saves, freshness, and, for users
+ *      with history, a personal-interest score. See that file for the weights.
+ *   4. A diversity cap per category that adapts to how many categories exist.
+ *
+ * Returns whether the feed was actually personalised so the page can say so.
  */
-export async function getCuratedResults(
+export async function getBrowseFeed(
   options: GetCuratedResultsOptions = {}
-): Promise<(DiscoveryItemDoc & { _id: Types.ObjectId })[]> {
-  const { sourceKind, limit = 60, excludeId } = options;
+): Promise<{ items: (DiscoveryItemDoc & { _id: Types.ObjectId })[]; personalized: boolean }> {
+  const { sourceKind, limit = 60, excludeId, userId } = options;
 
   const query: Record<string, unknown> = { active: true };
   if (sourceKind) query.sourceKind = sourceKind;
@@ -44,28 +41,35 @@ export async function getCuratedResults(
     query._id = { $ne: new Types.ObjectId(excludeId) };
   }
 
-  const pool = await DiscoveryItem.find(query)
-    .sort({ fetchedAt: -1 })
-    .limit(limit * 6)
-    .lean();
+  const poolSize = Math.min(1500, Math.max(400, limit * 10));
 
-  const perCategoryCount = new Map<string, number>();
-  const diverse = pool.filter((item) => {
-    const count = perCategoryCount.get(item.category) ?? 0;
-    if (count >= 3) return false;
-    perCategoryCount.set(item.category, count + 1);
-    return true;
-  });
+  const [pool, interests] = await Promise.all([
+    DiscoveryItem.find(query)
+      .sort({ fetchedAt: -1 })
+      .limit(poolSize)
+      .select('title category sourceKind source price image url saveCount fetchedAt')
+      .lean(),
+    userId
+      ? getUserInterests(userId).catch((err) => {
+          // Personalisation is a bonus: never let it break the page.
+          console.error('[browse] getUserInterests failed (non-fatal):', err);
+          return null;
+        })
+      : Promise.resolve(null),
+  ]);
 
-  diverse.sort((a, b) => {
-    const popA = Math.min(a.saveCount ?? 0, 20) * 1_000_000;
-    const popB = Math.min(b.saveCount ?? 0, 20) * 1_000_000;
-    const rankA = dailyRank(String(a._id)) - popA;
-    const rankB = dailyRank(String(b._id)) - popB;
-    return rankA - rankB;
-  });
+  const items = rankFeed(pool, { limit, dayKey: todayKey(), interests }) as unknown as (DiscoveryItemDoc & {
+    _id: Types.ObjectId;
+  })[];
 
-  return diverse.slice(0, limit) as (DiscoveryItemDoc & { _id: Types.ObjectId })[];
+  return { items, personalized: !!interests && interests.strength > 0 };
+}
+
+/** Kept for existing callers: the same feed without the personalisation flag. */
+export async function getCuratedResults(
+  options: GetCuratedResultsOptions = {}
+): Promise<(DiscoveryItemDoc & { _id: Types.ObjectId })[]> {
+  return (await getBrowseFeed(options)).items;
 }
 
 interface GetCuratedSearchResultsOptions {

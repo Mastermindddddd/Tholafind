@@ -5,15 +5,15 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ResultCard from '@/components/ResultCard';
 import { connectToDatabase } from '@/lib/db';
-import { getCuratedResults } from '@/lib/browse/getCuratedResults';
+import { getBrowseFeed } from '@/lib/browse/getCuratedResults';
 import { toFindResultFromDiscoveryItem } from '@/lib/browse/toFindResult';
 import { getSavedResultIds } from '@/lib/getSavedResultIds';
 import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import type { SourceKind } from '@/lib/types';
 
-// Content only changes once a day via the discovery cron, which calls
-// revalidatePath on each category itself right after ingesting.
-export const revalidate = 86400;
+// Rendered per request: the feed is reordered daily and tailored to the
+// signed-in user's own hunts and saves, so it can't be one shared static page.
+export const dynamic = 'force-dynamic';
 
 interface CategoryCopy {
   label: string;
@@ -84,9 +84,14 @@ export default async function BrowseCategoryPage({ params }: PageProps) {
   const copy = categoryCopy[category];
 
   await connectToDatabase();
-  const results = await getCuratedResults({ sourceKind: category, limit: 60 });
 
   const user = await getOrCreateUser();
+  const { items: results, personalized } = await getBrowseFeed({
+    sourceKind: category,
+    limit: 60,
+    userId: user?._id,
+  });
+
   const savedResultIds = await getSavedResultIds(
     user?._id,
     results.map((r) => r._id),
@@ -102,7 +107,7 @@ export default async function BrowseCategoryPage({ params }: PageProps) {
         <div className="flex items-center gap-2">
           <span className="h-px w-5 bg-brick/40" />
           <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-brick">
-            {copy.eyebrow}
+            {personalized ? `${copy.eyebrow} \u00b7 picked for you` : copy.eyebrow}
           </p>
         </div>
 
