@@ -23,7 +23,7 @@ export default function OnboardingForm() {
 
   const handleSubmit = async () => {
     if (selected.length === 0) {
-      setError('Pick at least one — or choose "A bit of everything."');
+      setError('Pick at least one or choose "A bit of everything."');
       return;
     }
     setError(null);
@@ -38,7 +38,7 @@ export default function OnboardingForm() {
       router.push('/collections');
       router.refresh();
     } catch {
-      setError("That didn't save — try again in a moment.");
+      setError("That didn't save - try again in a moment.");
       setSubmitting(false);
     }
   };
