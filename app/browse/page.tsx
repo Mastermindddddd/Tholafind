@@ -55,7 +55,7 @@ export default async function BrowsePage() {
         </h1>
         <p className="mt-2 max-w-xl text-[0.9rem] text-inkSoft">
           {personalized
-            ? 'Tuned to your hunts and saves, mixed with today’s popular finds. A fresh pull every day — tap the heart on anything to save it.'
+            ? 'Tuned to your hunts and saves, mixed with today’s popular finds. A fresh pull every day - tap the heart on anything to save it.'
             : 'A fresh pull from across the web every day - not a demo, not a mockup. Tap the heart on anything to save it to your own collection.'}
         </p>
 
