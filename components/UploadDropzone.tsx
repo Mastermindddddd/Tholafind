@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 import { Camera, Upload, ScanLine, AlertCircle, Tag, ShoppingBag, RefreshCw, Users } from 'lucide-react';
 
 type Phase = 'idle' | 'scanning' | 'error';
@@ -24,6 +26,27 @@ export default function UploadDropzone() {
   const [showHint, setShowHint] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { isLoaded, isSignedIn } = useAuth();
+
+  /**
+   * Hunts need an account. Checked BEFORE the file picker opens, a photo is
+   * dropped, or a sample hunt starts, so nobody picks a photo and then loses
+   * it to a redirect. The /api/upload route enforces this again server-side.
+   * Returns true when the action should stop.
+   */
+  const blockIfSignedOut = useCallback(() => {
+    if (!isLoaded) return true; // Clerk still loading: ignore the click rather than guess
+    if (!isSignedIn) {
+      router.push(`/sign-in?redirect_url=${encodeURIComponent('/')}`);
+      return true;
+    }
+    return false;
+  }, [isLoaded, isSignedIn, router]);
+
+  const openPicker = useCallback(() => {
+    if (blockIfSignedOut()) return;
+    inputRef.current?.click();
+  }, [blockIfSignedOut]);
 
   const reset = useCallback(() => {
     setPhase('idle');
@@ -34,14 +57,15 @@ export default function UploadDropzone() {
   const handleFile = useCallback(
     async (file: File | undefined) => {
       if (!file) return;
+      if (blockIfSignedOut()) return;
 
       if (!ALLOWED_TYPES.includes(file.type)) {
-        setErrorMessage('That file type isn\u2019t supported \u2014 try a JPEG, PNG, WEBP, or HEIC photo.');
+        setErrorMessage('That file type isn’t supported — try a JPEG, PNG, WEBP, or HEIC photo.');
         setPhase('error');
         return;
       }
       if (file.size > MAX_FILE_BYTES) {
-        setErrorMessage('That photo is too large \u2014 try one under 8MB.');
+        setErrorMessage('That photo is too large — try one under 8MB.');
         setPhase('error');
         return;
       }
@@ -54,34 +78,36 @@ export default function UploadDropzone() {
       if (hint.trim()) formData.append('hint', hint.trim());
 
       try {
-  const res = await withMinimumDelay(
-    fetch('/api/upload', { method: 'POST', body: formData }),
-    MIN_SCAN_MS
-  );
+        const res = await withMinimumDelay(
+          fetch('/api/upload', { method: 'POST', body: formData }),
+          MIN_SCAN_MS
+        );
 
-  if (res.status === 401) {
-    router.push('/sign-in');
-    return;
-  }
+        if (res.status === 401) {
+          router.push('/sign-in');
+          return;
+        }
 
-  const data = await res.json();
+        const data = await res.json();
 
-  if (!res.ok || !data.ok) {
-    throw new Error(data.message || 'Upload failed.');
-  }
+        if (!res.ok || !data.ok) {
+          throw new Error(data.message || 'Upload failed.');
+        }
 
-  router.push(`/results/${data.searchId}`);
-} catch (err) {
+        router.push(`/results/${data.searchId}`);
+      } catch (err) {
         setErrorMessage(
-          err instanceof Error ? err.message : 'That upload didn\u2019t go through \u2014 try again.'
+          err instanceof Error ? err.message : 'That upload didn’t go through — try again.'
         );
         setPhase('error');
       }
     },
-    [hint, router]
+    [hint, router, blockIfSignedOut]
   );
 
   const handleDemo = useCallback(async () => {
+    if (blockIfSignedOut()) return;
+
     const demoImageUrl = 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&q=80';
     setPreviewUrl(demoImageUrl);
     setPhase('scanning');
@@ -95,6 +121,12 @@ export default function UploadDropzone() {
         }),
         MIN_SCAN_MS
       );
+
+      if (res.status === 401) {
+        router.push('/sign-in');
+        return;
+      }
+
       const data = await res.json();
 
       if (!res.ok || !data.ok) {
@@ -104,11 +136,13 @@ export default function UploadDropzone() {
       router.push(`/results/${data.searchId}`);
     } catch (err) {
       setErrorMessage(
-        err instanceof Error ? err.message : 'Could not start the sample hunt \u2014 try again.'
+        err instanceof Error ? err.message : 'Could not start the sample hunt — try again.'
       );
       setPhase('error');
     }
-  }, [router]);
+  }, [router, blockIfSignedOut]);
+
+  const signedOut = isLoaded && !isSignedIn;
 
   return (
     <div className="mx-auto w-full max-w-lg">
@@ -123,31 +157,31 @@ export default function UploadDropzone() {
           setDragActive(false);
           handleFile(e.dataTransfer.files?.[0]);
         }}
-        onClick={() => phase === 'idle' && inputRef.current?.click()}
+        onClick={() => phase === 'idle' && openPicker()}
         className={`relative overflow-hidden rounded-xl border-2 border-dashed bg-paper/70 px-4 py-3.5 text-center shadow-card transition-colors sm:px-7 sm:py-5 ${
-  phase === 'idle' ? 'cursor-pointer' : ''
-} ${dragActive ? 'border-brick bg-paperDim' : 'border-pine/30 hover:border-pine/50'}`}
+          phase === 'idle' ? 'cursor-pointer' : ''
+        } ${dragActive ? 'border-brick bg-paperDim' : 'border-pine/30 hover:border-pine/50'}`}
       >
         {phase === 'idle' && (
           <>
             <div className="relative mx-auto flex items-center justify-center">
-  <span aria-hidden className="absolute -left-5 text-xs text-brass sm:-left-8 sm:text-sm">
-    ✦
-  </span>
-  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-pine text-paper shadow-md sm:h-11 sm:w-11">
-    <Camera size={16} strokeWidth={1.5} className="sm:h-[18px] sm:w-[18px]" />
-  </span>
-  <span aria-hidden className="absolute -right-5 text-xs text-pine/40 sm:-right-8 sm:text-sm">
-    ✦
-  </span>
-</div>
+              <span aria-hidden className="absolute -left-5 text-xs text-brass sm:-left-8 sm:text-sm">
+                ✦
+              </span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-pine text-paper shadow-md sm:h-11 sm:w-11">
+                <Camera size={16} strokeWidth={1.5} className="sm:h-[18px] sm:w-[18px]" />
+              </span>
+              <span aria-hidden className="absolute -right-5 text-xs text-pine/40 sm:-right-8 sm:text-sm">
+                ✦
+              </span>
+            </div>
 
-<p className="mt-1.5 font-display text-sm font-semibold text-ink sm:mt-2 sm:text-base md:text-lg">
-  Drop your photo here
-</p>
-<p className="mt-0.5 font-mono text-[0.56rem] uppercase tracking-[0.08em] text-inkSoft sm:text-[0.6rem] sm:tracking-[0.1em]">
-  or click to upload
-</p>
+            <p className="mt-1.5 font-display text-sm font-semibold text-ink sm:mt-2 sm:text-base md:text-lg">
+              Drop your photo here
+            </p>
+            <p className="mt-0.5 font-mono text-[0.56rem] uppercase tracking-[0.08em] text-inkSoft sm:text-[0.6rem] sm:tracking-[0.1em]">
+              {signedOut ? 'sign in to start a hunt' : 'or click to upload'}
+            </p>
 
             <div
               className="mt-3 flex flex-col items-center gap-1.5"
@@ -181,20 +215,21 @@ export default function UploadDropzone() {
               )}
 
               <div className="mt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 sm:mt-1 sm:gap-x-4">
-  <button
-    onClick={() => inputRef.current?.click()}
-    className="flex items-center justify-center gap-1.5 rounded-full bg-pine px-3.5 py-1.5 font-mono text-[0.58rem] uppercase tracking-[0.08em] text-paper transition-colors hover:bg-pineDeep sm:px-4 sm:text-[0.62rem] sm:tracking-[0.1em]"
-  >
-    <Upload size={11} className="sm:h-3 sm:w-3" /> Choose a photo
-  </button>
+                <button
+                  onClick={openPicker}
+                  className="flex items-center justify-center gap-1.5 rounded-full bg-pine px-3.5 py-1.5 font-mono text-[0.58rem] uppercase tracking-[0.08em] text-paper transition-colors hover:bg-pineDeep sm:px-4 sm:text-[0.62rem] sm:tracking-[0.1em]"
+                >
+                  <Upload size={11} className="sm:h-3 sm:w-3" />{' '}
+                  {signedOut ? 'Sign in to upload' : 'Choose a photo'}
+                </button>
 
-  <button
-    onClick={handleDemo}
-    className="font-mono text-[0.58rem] uppercase tracking-[0.06em] text-inkSoft underline decoration-dotted underline-offset-4 hover:text-brick sm:text-[0.6rem] sm:tracking-[0.08em]"
-  >
-    Try a sample hunt
-  </button>
-</div>
+                <button
+                  onClick={handleDemo}
+                  className="font-mono text-[0.58rem] uppercase tracking-[0.06em] text-inkSoft underline decoration-dotted underline-offset-4 hover:text-brick sm:text-[0.6rem] sm:tracking-[0.08em]"
+                >
+                  Try a sample hunt
+                </button>
+              </div>
             </div>
 
             <input
@@ -235,40 +270,54 @@ export default function UploadDropzone() {
           </div>
         )}
       </div>
+
+      {signedOut && (
+        <p className="mt-2 text-center text-[0.72rem] text-inkSoft">
+          A free account is needed to start a hunt.{' '}
+          <Link
+            href={`/sign-in?redirect_url=${encodeURIComponent('/')}`}
+            className="text-pine underline decoration-dotted underline-offset-4 hover:text-brick"
+          >
+            Sign in or create one
+          </Link>
+          .
+        </p>
+      )}
+
       <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:mt-4 sm:gap-x-6">
-  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
-    <Tag size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
-    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
-      Retail
-    </span>
-  </div>
-  <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
-  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
-    <ShoppingBag size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
-    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
-      Marketplaces
-    </span>
-  </div>
-  <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
-  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
-    <RefreshCw size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
-    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
-      Resale
-    </span>
-  </div>
-  <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
-  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
-    <Users size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
-    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
-      Finders
-    </span>
-  </div>
-  <div className="flex items-center gap-1 text-pine sm:gap-1.5">
-    <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
-      searched at once
-    </span>
-  </div>
-</div>
+        <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+          <Tag size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+          <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+            Retail
+          </span>
+        </div>
+        <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+        <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+          <ShoppingBag size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+          <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+            Marketplaces
+          </span>
+        </div>
+        <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+        <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+          <RefreshCw size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+          <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+            Resale
+          </span>
+        </div>
+        <span className="hidden h-3.5 w-px bg-pine/20 sm:block" />
+        <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+          <Users size={12} strokeWidth={1.5} className="sm:h-[13px] sm:w-[13px]" />
+          <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+            Finders
+          </span>
+        </div>
+        <div className="flex items-center gap-1 text-pine sm:gap-1.5">
+          <span className="font-mono text-[0.5rem] uppercase tracking-[0.06em] sm:text-[0.54rem] sm:tracking-[0.08em]">
+            searched at once
+          </span>
+        </div>
+      </div>
 
       {/*<p className="mt-2 text-center font-mono text-[0.58rem] uppercase tracking-[0.08em] text-inkSoft sm:text-[0.6rem]">
         Retail &middot; Resale &middot; Vintage &mdash; searched at once

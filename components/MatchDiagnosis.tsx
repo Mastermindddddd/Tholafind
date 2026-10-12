@@ -1,7 +1,9 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 import { AlertCircle, Camera, Loader2 } from 'lucide-react';
 
 type Missing = 'brand' | 'tag' | 'material' | 'color' | 'angle';
@@ -33,13 +35,18 @@ export default function MatchDiagnosis({
   existingHint,
 }: MatchDiagnosisProps) {
   const router = useRouter();
+  const { isLoaded, isSignedIn } = useAuth();
+  const signedOut = isLoaded && !isSignedIn;
   const fileRef = useRef<HTMLInputElement>(null);
   const [values, setValues] = useState({ brand: '', material: '', color: '' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const textFields = (['brand', 'material', 'color'] as const).filter((f) => missing.includes(f));
-  const wantsPhoto = (missing.includes('tag') || missing.includes('angle')) && imageCount < MAX_IMAGES;
+  const textFields = (['brand', 'material', 'color'] as const).filter(
+    (f) => !signedOut && missing.includes(f)
+  );
+  const wantsPhoto =
+    !signedOut && (missing.includes('tag') || missing.includes('angle')) && imageCount < MAX_IMAGES;
   const hasText = textFields.some((f) => values[f].trim().length > 0);
 
   async function send(init: RequestInit) {
@@ -90,6 +97,18 @@ export default function MatchDiagnosis({
             Help us tighten this up
           </p>
           <p className="mt-1 text-[0.85rem] text-inkSoft">{explanation}</p>
+
+          {signedOut && (
+            <p className="mt-3 text-[0.82rem] text-ink">
+              <Link
+                href="/sign-in"
+                className="underline decoration-dotted underline-offset-4 hover:text-pine"
+              >
+                Sign in
+              </Link>{' '}
+              to add details or another photo and rescan.
+            </p>
+          )}
 
           {(textFields.length > 0 || wantsPhoto) && (
             <p className="mt-3 text-[0.82rem] text-ink">

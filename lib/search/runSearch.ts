@@ -10,6 +10,7 @@ import { searchGoogleLens } from './providers/serpapiLens';
 import { searchEbay } from './providers/ebay';
 import { searchEtsy } from './providers/etsy';
 import { resolvePriceFromUrl } from './priceResolver';
+import { cleanPriceDisplay, findSuspiciousPrices } from './priceSanity';
 
 function toResultDoc(
   searchId: unknown,
@@ -23,7 +24,7 @@ function toResultDoc(
     searchId,
     title: candidate.title,
     image: candidate.image,
-    price: candidate.price,
+    price: cleanPriceDisplay(candidate.price),
     url: candidate.url,
     source: candidate.source,
     sourceKind: candidate.sourceKind,
@@ -90,7 +91,15 @@ const MAX_PRICE_RESOLUTIONS = 10;
  * it was (price: undefined → "See price on site" downstream).
  */
 async function backfillMissingPrices(docs: ReturnType<typeof toResultDoc>[]): Promise<void> {
-  const missing = docs.filter((d) => !d.price).slice(0, MAX_PRICE_RESOLUTIONS);
+  // Prices we threw away as implausible go first, so they get a page lookup
+  // before the cap runs out; then results that never had a price.
+  const missing = docs
+    .filter((d) => !d.price)
+    .sort(
+      (a, b) =>
+        Number('discardedPrice' in b.metadata) - Number('discardedPrice' in a.metadata)
+    )
+    .slice(0, MAX_PRICE_RESOLUTIONS);
   if (missing.length === 0) return;
 
   await Promise.all(
@@ -207,6 +216,17 @@ export async function runSearch(searchId: string): Promise<void> {
     ...ebayResults.map((c, i) => toResultDoc(search._id, c, i, combined, hint)),
     ...etsyResults.map((c, i) => toResultDoc(search._id, c, i, combined, hint)),
   ];
+
+  // Drop prices that are far below everything else in this hunt (likely
+  // mis-reads, e.g. "$8" on a $90+ sneaker). The original is kept in
+  // metadata.discardedPrice for debugging; the backfill below then tries the
+  // product page, and failing that the card shows "See price on site".
+  const suspicious = findSuspiciousPrices(resultDocs.map((d) => d.price));
+  suspicious.forEach((i) => {
+    const doc = resultDocs[i];
+    doc.metadata = { ...doc.metadata, discardedPrice: doc.price };
+    doc.price = undefined;
+  });
 
   // Best-effort — mutates price in place on any doc that resolves.
   await backfillMissingPrices(resultDocs);

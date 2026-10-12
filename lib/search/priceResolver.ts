@@ -3,10 +3,15 @@ const MAX_HTML_BYTES = 2_000_000; // 2MB — enough for head+early body on virtu
 
 /**
  * Attempts to resolve a real price by fetching the item's own page and
- * reading it the way search engines do — structured data first, then
- * meta tags, then a last-resort text scan. Returns null (not throws) on
- * any failure — this always runs as a best-effort enhancement, never
- * something that should block a caller.
+ * reading it the way search engines do — structured data first, then meta
+ * tags. Returns null (not throws) on any failure — this always runs as a
+ * best-effort enhancement, never something that should block a caller.
+ *
+ * Correct-or-nothing: a price is only returned when the page states BOTH an
+ * amount and its currency in structured data. The old last-resort scan of
+ * the visible HTML for the first "$123" was removed — on pages without
+ * structured data it picked up banners, shipping thresholds and installment
+ * text (e.g. "$8"), and a wrong price is worse than "See price on site".
  *
  * No 'server-only' guard here (unlike most of lib/search/) since this is
  * called both from runSearch.ts (a Next server route) and from standalone
@@ -22,11 +27,8 @@ export async function resolvePriceFromUrl(url: string): Promise<string | null> {
     return null;
   }
 
-  return (
-    extractFromJsonLd(html) ||
-    extractFromMetaTags(html) ||
-    extractFromVisibleText(html)
-  );
+  const found = extractFromJsonLd(html) || extractFromMetaTags(html);
+  return found ? formatPrice(found) : null;
 }
 
 async function fetchHtml(url: string): Promise<string> {
@@ -66,7 +68,27 @@ async function fetchHtml(url: string): Promise<string> {
   }
 }
 
-function extractFromJsonLd(html: string): string | null {
+interface FoundPrice {
+  amount: number;
+  currency: string; // ISO 4217, upper case
+}
+
+/** Accepts only unambiguous number formats; anything else (e.g. "1.299,00") is rejected, not guessed. */
+function toFound(price: unknown, currency: unknown): FoundPrice | null {
+  let amount = NaN;
+  if (typeof price === 'number') {
+    amount = price;
+  } else if (typeof price === 'string') {
+    const s = price.trim();
+    if (/^\d+(\.\d+)?$/.test(s)) amount = parseFloat(s);
+    else if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) amount = parseFloat(s.replace(/,/g, ''));
+  }
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+  if (typeof currency !== 'string' || !/^[A-Za-z]{3}$/.test(currency.trim())) return null;
+  return { amount, currency: currency.trim().toUpperCase() };
+}
+
+function extractFromJsonLd(html: string): FoundPrice | null {
   const scriptMatches = html.matchAll(
     /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
   );
@@ -74,8 +96,8 @@ function extractFromJsonLd(html: string): string | null {
   for (const match of scriptMatches) {
     try {
       const parsed = JSON.parse(match[1].trim());
-      const price = findPriceInJsonLd(parsed);
-      if (price) return formatPrice(price);
+      const found = findPriceInJsonLd(parsed);
+      if (found) return found;
     } catch {
       continue;
     }
@@ -83,7 +105,45 @@ function extractFromJsonLd(html: string): string | null {
   return null;
 }
 
-function findPriceInJsonLd(node: unknown): string | number | null {
+function fromOffers(offers: unknown, inheritedCurrency?: unknown): FoundPrice | null {
+  const list = Array.isArray(offers) ? offers : [offers];
+  for (const offer of list) {
+    if (offer && typeof offer === 'object') {
+      const found = fromOffer(offer as Record<string, unknown>, inheritedCurrency);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function fromOffer(offer: Record<string, unknown>, inheritedCurrency?: unknown): FoundPrice | null {
+  const currency = offer.priceCurrency ?? inheritedCurrency;
+
+  // AggregateOffer: the page states a range; lowPrice is the "from" price.
+  if (offer.lowPrice !== undefined) {
+    const low = toFound(offer.lowPrice, currency);
+    if (low) return low;
+  }
+
+  const direct = toFound(offer.price, currency);
+  if (direct) return direct;
+
+  const spec = offer.priceSpecification;
+  if (spec && typeof spec === 'object') {
+    for (const s of Array.isArray(spec) ? spec : [spec]) {
+      if (s && typeof s === 'object') {
+        const o = s as Record<string, unknown>;
+        const found = toFound(o.price, o.priceCurrency ?? currency);
+        if (found) return found;
+      }
+    }
+  }
+
+  if (offer.offers) return fromOffers(offer.offers, currency);
+  return null;
+}
+
+function findPriceInJsonLd(node: unknown): FoundPrice | null {
   if (!node || typeof node !== 'object') return null;
 
   if (Array.isArray(node)) {
@@ -96,24 +156,21 @@ function findPriceInJsonLd(node: unknown): string | number | null {
 
   const obj = node as Record<string, unknown>;
 
-  if (typeof obj.price === 'string' || typeof obj.price === 'number') {
-    return obj.price;
+  if (obj.offers) {
+    const found = fromOffers(obj.offers);
+    if (found) return found;
   }
 
-  if (obj.offers) {
-    const offers = Array.isArray(obj.offers) ? obj.offers[0] : obj.offers;
-    if (offers && typeof offers === 'object') {
-      const offerObj = offers as Record<string, unknown>;
-      if (typeof offerObj.price === 'string' || typeof offerObj.price === 'number') {
-        return offerObj.price;
-      }
-      if (offerObj.priceSpecification && typeof offerObj.priceSpecification === 'object') {
-        const spec = offerObj.priceSpecification as Record<string, unknown>;
-        if (typeof spec.price === 'string' || typeof spec.price === 'number') {
-          return spec.price;
-        }
-      }
-    }
+  // The node may itself be an Offer.
+  if (obj.price !== undefined || obj.lowPrice !== undefined) {
+    const found = fromOffer(obj);
+    if (found) return found;
+  }
+
+  // ProductGroup pages keep the offers on their variants.
+  if (Array.isArray(obj.hasVariant)) {
+    const found = findPriceInJsonLd(obj.hasVariant);
+    if (found) return found;
   }
 
   if (Array.isArray(obj['@graph'])) {
@@ -123,31 +180,40 @@ function findPriceInJsonLd(node: unknown): string | number | null {
   return null;
 }
 
-function extractFromMetaTags(html: string): string | null {
-  const patterns = [
-    /<meta[^>]+property=["']product:price:amount["'][^>]+content=["']([^"']+)["']/i,
-    /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']product:price:amount["']/i,
-    /<meta[^>]+itemprop=["']price["'][^>]+content=["']([^"']+)["']/i,
-    /<meta[^>]+content=["']([^"']+)["'][^>]+itemprop=["']price["']/i,
+function metaContent(html: string, attr: 'property' | 'itemprop', key: string): string | null {
+  const before = new RegExp(`<meta[^>]+${attr}=["']${key}["'][^>]+content=["']([^"']+)["']`, 'i');
+  const after = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+${attr}=["']${key}["']`, 'i');
+  return html.match(before)?.[1] ?? html.match(after)?.[1] ?? null;
+}
+
+function extractFromMetaTags(html: string): FoundPrice | null {
+  const pairs: ['property' | 'itemprop', string, string][] = [
+    ['property', 'product:price:amount', 'product:price:currency'],
+    ['property', 'og:price:amount', 'og:price:currency'],
+    ['itemprop', 'price', 'priceCurrency'],
   ];
 
-  for (const pattern of patterns) {
-    const match = html.match(pattern);
-    if (match?.[1]) {
-      const cleaned = match[1].trim();
-      if (/^\d+(\.\d{1,2})?$/.test(cleaned)) return formatPrice(cleaned);
-    }
+  for (const [attr, amountKey, currencyKey] of pairs) {
+    const found = toFound(metaContent(html, attr, amountKey), metaContent(html, attr, currencyKey));
+    if (found) return found;
   }
   return null;
 }
 
-function extractFromVisibleText(html: string): string | null {
-  const match = html.match(/[$£€]\s?\d{1,5}(?:[.,]\d{2})?/);
-  return match ? match[0].replace(/\s+/g, '') : null;
-}
+const SYMBOLS: Record<string, string> = {
+  USD: '$',
+  GBP: '£',
+  EUR: '€',
+  ZAR: 'R',
+  AUD: 'A$',
+  CAD: 'C$',
+  NZD: 'NZ$',
+  JPY: '¥',
+  INR: '₹',
+};
 
-function formatPrice(raw: string | number): string {
-  const num = typeof raw === 'number' ? raw : parseFloat(raw);
-  if (Number.isNaN(num)) return String(raw);
-  return `$${num.toFixed(2)}`;
+function formatPrice({ amount, currency }: FoundPrice): string {
+  const digits = currency === 'JPY' ? 0 : 2;
+  const symbol = SYMBOLS[currency];
+  return symbol ? `${symbol}${amount.toFixed(digits)}` : `${currency} ${amount.toFixed(digits)}`;
 }

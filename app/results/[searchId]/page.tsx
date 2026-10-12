@@ -7,6 +7,7 @@ import { connectToDatabase } from '@/lib/db';
 import { Search, SearchResult, Collection, CollectionItem, CommunityRequest } from '@/lib/models';
 import { getOrCreateUser } from '@/lib/getOrCreateUser';
 import { Confidence, FindResult } from '@/lib/types';
+import { cleanPriceDisplay } from '@/lib/search/priceSanity';
 
 // Explicit rather than relying on getOrCreateUser's implicit dynamic
 // trigger via Clerk's currentUser() — this page must never be statically
@@ -66,7 +67,7 @@ export default async function ResultsPage({ params }: PageProps) {
       // Lens matched visually rather than genuine product listings — those
       // will never have a price to extract, no matter how the parsing
       // improves. "See price on site" reads as a next step, not a dead end.
-      price: doc.price || 'See price on site',
+      price: cleanPriceDisplay(doc.price) || 'See price on site',
       confidence: doc.confidence,
       // Undefined for searches run before match scoring existed — the UI
       // shows no percentage for those instead of inventing one.

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { put } from '@vercel/blob';
 import { Types } from 'mongoose';
 import { connectToDatabase } from '@/lib/db';
@@ -24,15 +25,20 @@ const MAX_IMAGES = 3; // matches the Search schema's own validation
  * so the person gets one clean, improved result set rather than starting
  * a whole new hunt from scratch.
  *
- * Known scope limitation, stated plainly rather than silently: this route
- * doesn't check that the caller owns the search. Anyone who knows a
- * searchId (a MongoDB ObjectId — not realistically guessable, but not a
- * secret either) could refine it. Given searches aren't private/sensitive
- * data in this app, that's an acceptable MVP tradeoff — but if that
- * changes, add an ownership check here (Search.userId must match the
- * signed-in user, or the search must be anonymous).
+ * Access: signed-in users only, and only on their own hunts. (Legacy hunts
+ * with no userId can still be refined by any signed-in user.) Without the
+ * ownership check, anyone who learned a searchId could re-run someone else's
+ * search, delete its results and overwrite its hint.
  */
 export async function POST(request: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json(
+      { ok: false, message: 'Sign in to refine a hunt.' },
+      { status: 401 }
+    );
+  }
+
   try {
     await connectToDatabase();
 
@@ -98,6 +104,13 @@ export async function POST(request: Request) {
     const search = await Search.findById(searchId);
     if (!search) {
       return NextResponse.json({ ok: false, message: 'Search not found.' }, { status: 404 });
+    }
+
+    if (search.userId && (!user || String(search.userId) !== String(user._id))) {
+      return NextResponse.json(
+        { ok: false, message: 'You can only refine your own hunts.' },
+        { status: 403 }
+      );
     }
 
     if (file) {
