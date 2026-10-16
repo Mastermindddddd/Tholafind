@@ -34,7 +34,18 @@ if (target === 'chrome') {
   m.background = { service_worker: 'background.js', type: 'module' };
 } else {
   m.background = { scripts: ['background.js'], type: 'module' };
-  if (target === 'firefox') m.browser_specific_settings = { gecko: { id: 'tholafind@tholafind.com', strict_min_version: '128.0' } };
+  if (target === 'firefox') {
+    // data_collection_permissions is mandatory for new AMO submissions and needs Firefox 140+.
+    // Declared because a hunt sends: the image + text read from it (websiteContent), the page's
+    // hostname (browsingActivity) and the account token (authenticationInfo).
+    m.browser_specific_settings = {
+      gecko: {
+        id: 'tholafind@tholafind.com',
+        strict_min_version: '140.0',
+        data_collection_permissions: { required: ['websiteContent', 'browsingActivity', 'authenticationInfo'] },
+      },
+    };
+  }
 }
 if (flag('dev')) m.name += ' (dev)';
 fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify(m, null, 2));
