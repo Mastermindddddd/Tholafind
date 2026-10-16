@@ -9,7 +9,7 @@ import { analyzeImage, combineSignals, emptySignals, signalQuery } from './image
 import { searchGoogleLens } from './providers/serpapiLens';
 import { searchEbay } from './providers/ebay';
 import { searchEtsy } from './providers/etsy';
-import { resolvePriceFromUrl } from './priceResolver';
+import { inspectListing } from './priceResolver';
 import { cleanPriceDisplay, findSuspiciousPrices } from './priceSanity';
 
 function toResultDoc(
@@ -79,39 +79,50 @@ async function runProviderAcrossQueries(
   return dedupeByUrl(collected);
 }
 
-// Caps how many priceless results get a live page-fetch per search, so one
-// hunt with a lot of price-missing matches can't blow out the route's
-// maxDuration (60s). Each resolve has its own 6s timeout (priceResolver.ts),
-// run in parallel, so this bounds worst case to ~6s rather than 6s × N.
-const MAX_PRICE_RESOLUTIONS = 10;
+// Caps how many results get a live page-fetch per search, so one hunt can't
+// blow out the route's maxDuration (60s). Each inspection has its own 6s
+// timeout (priceResolver.ts) and they run in parallel, so the worst case is
+// ~6s rather than 6s x N.
+const MAX_LISTING_INSPECTIONS = 12;
 
 /**
- * Best-effort price backfill for results the providers returned with no
- * price at all. Never throws: an unresolved price just leaves the result as
- * it was (price: undefined → "See price on site" downstream).
+ * Checks listings against their own pages: fills in missing prices and drops
+ * results whose listing is gone (404/410/ended) or sold out, so nobody clicks
+ * through to a dead end. Listings we can't verify ("unknown" — blocked,
+ * timed out, no structured data) are KEPT. Verified in-stock results get a
+ * "Listing confirmed in stock" reason. Never throws.
+ *
+ * Priority for the capped inspections: prices we discarded as implausible,
+ * then results with no price, then the best-scored of the rest.
  */
-async function backfillMissingPrices(docs: ReturnType<typeof toResultDoc>[]): Promise<void> {
-  // Prices we threw away as implausible go first, so they get a page lookup
-  // before the cap runs out; then results that never had a price.
-  const missing = docs
-    .filter((d) => !d.price)
-    .sort(
-      (a, b) =>
-        Number('discardedPrice' in b.metadata) - Number('discardedPrice' in a.metadata)
-    )
-    .slice(0, MAX_PRICE_RESOLUTIONS);
-  if (missing.length === 0) return;
+async function inspectListings(
+  docs: ReturnType<typeof toResultDoc>[]
+): Promise<ReturnType<typeof toResultDoc>[]> {
+  const rank = (d: (typeof docs)[number]) =>
+    'discardedPrice' in d.metadata ? 0 : !d.price ? 1 : 2;
+  const targets = [...docs]
+    .sort((a, b) => rank(a) - rank(b) || b.matchScore - a.matchScore)
+    .slice(0, MAX_LISTING_INSPECTIONS);
+
+  const dead = new Set<(typeof docs)[number]>();
 
   await Promise.all(
-    missing.map(async (doc) => {
+    targets.map(async (doc) => {
       try {
-        const resolved = await resolvePriceFromUrl(doc.url);
-        if (resolved) doc.price = resolved;
+        const { price, availability } = await inspectListing(doc.url);
+        if (price && !doc.price) doc.price = price;
+        if (availability === 'gone' || availability === 'sold_out') {
+          dead.add(doc);
+        } else if (availability === 'available') {
+          doc.matchReasons = [...(doc.matchReasons ?? []), 'Listing confirmed in stock'];
+        }
       } catch (err) {
-        console.error(`[runSearch] price resolution failed for ${doc.url}:`, err);
+        console.error(`[runSearch] listing check failed for ${doc.url}:`, err);
       }
     })
   );
+
+  return docs.filter((d) => !dead.has(d));
 }
 
 type SubdocLike = { toObject?: () => ImageSignals } & ImageSignals;
@@ -228,14 +239,14 @@ export async function runSearch(searchId: string): Promise<void> {
     doc.price = undefined;
   });
 
-  // Best-effort — mutates price in place on any doc that resolves.
-  await backfillMissingPrices(resultDocs);
+  // Best-effort — fills prices in place and drops dead / sold-out listings.
+  const liveDocs = await inspectListings(resultDocs);
 
-  if (resultDocs.length > 0) {
-    await SearchResult.insertMany(resultDocs);
+  if (liveDocs.length > 0) {
+    await SearchResult.insertMany(liveDocs);
   }
 
-  const bestScore = resultDocs.reduce((max, d) => Math.max(max, d.matchScore), 0);
+  const bestScore = liveDocs.reduce((max, d) => Math.max(max, d.matchScore), 0);
   const diagnosis = diagnoseMatch({
     bestScore,
     signals: combined,
@@ -245,8 +256,8 @@ export async function runSearch(searchId: string): Promise<void> {
   // Cleared (undefined) once a rerun finds a strong match.
   search.set('diagnosis', diagnosis ?? undefined);
 
-  const hasConfidentResult = resultDocs.some((d) => d.confidence !== 'guess');
+  const hasConfidentResult = liveDocs.some((d) => d.confidence !== 'guess');
   search.status =
-    resultDocs.length === 0 ? 'failed' : hasConfidentResult ? 'complete' : 'low_confidence';
+    liveDocs.length === 0 ? 'failed' : hasConfidentResult ? 'complete' : 'low_confidence';
   await search.save();
 }

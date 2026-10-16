@@ -59,6 +59,11 @@ const SearchSchema = new Schema(
     // (created out-of-band in the Atlas UI / API, not through Mongoose).
     embedding: { type: [Number], select: false },
 
+    // Where the hunt was started from. 'extension' hunts also record only the HOSTNAME
+    // of the page the image came from (e.g. "instagram.com"), never the full URL.
+    via: { type: String, enum: ['web', 'extension'], default: 'web' },
+    sourceHost: { type: String, trim: true, maxlength: 100 },
+
     // Per-photo extracted signals: tag text, brand, material, design cues, quality, EXIF summary.
     imageSignals: { type: [ImageSignalSchema], default: [] },
 

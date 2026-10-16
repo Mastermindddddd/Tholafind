@@ -1,0 +1,20 @@
+{
+  "name": "tholafind-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Tholafind browser extension: right-click or crop any image and start a hunt without leaving the page.",
+  "scripts": {
+    "vendor": "node scripts/vendor.mjs",
+    "build": "node scripts/build.mjs --target chrome && node scripts/build.mjs --target firefox",
+    "build:chrome": "node scripts/build.mjs --target chrome",
+    "build:firefox": "node scripts/build.mjs --target firefox",
+    "build:safari": "node scripts/build.mjs --target safari",
+    "build:dev": "node scripts/build.mjs --target chrome --base http://localhost:3000 --dev",
+    "test": "node test/run.mjs"
+  },
+  "devDependencies": {
+    "tesseract.js": "5.1.1",
+    "@tesseract.js-data/eng": "1.0.0"
+  }
+}

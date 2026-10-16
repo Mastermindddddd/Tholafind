@@ -20,18 +20,52 @@ const MAX_HTML_BYTES = 2_000_000; // 2MB — enough for head+early body on virtu
  * runtime context, so it can't be used in anything invoked by a script.
  */
 export async function resolvePriceFromUrl(url: string): Promise<string | null> {
-  let html: string;
-  try {
-    html = await fetchHtml(url);
-  } catch {
-    return null;
-  }
-
-  const found = extractFromJsonLd(html) || extractFromMetaTags(html);
-  return found ? formatPrice(found) : null;
+  return (await inspectListing(url)).price;
 }
 
-async function fetchHtml(url: string): Promise<string> {
+export type Availability = 'available' | 'sold_out' | 'gone' | 'unknown';
+
+export interface ListingInspection {
+  price: string | null;
+  availability: Availability;
+}
+
+/**
+ * One page fetch, two answers: the price (as above) and whether the listing
+ * is still live.
+ *   gone      — the page 404s/410s, or the marketplace says the listing ended
+ *   sold_out  — structured data says every offer is out of stock / sold out
+ *   available — structured data says at least one offer is in stock
+ *   unknown   — anything else (blocked, timed out, no structured data). Callers
+ *               must KEEP unknown listings: many retailers block server fetches,
+ *               and hiding a good match because we couldn't look is worse than
+ *               showing it.
+ * Never throws.
+ */
+export async function inspectListing(url: string): Promise<ListingInspection> {
+  let page: FetchedPage;
+  try {
+    page = await fetchHtml(url);
+  } catch {
+    return { price: null, availability: 'unknown' };
+  }
+
+  if (page.status === 404 || page.status === 410) return { price: null, availability: 'gone' };
+  if (!page.html) return { price: null, availability: 'unknown' };
+
+  const found = extractFromJsonLd(page.html) || extractFromMetaTags(page.html);
+  return {
+    price: found ? formatPrice(found) : null,
+    availability: extractAvailability(page.html),
+  };
+}
+
+interface FetchedPage {
+  status: number;
+  html: string; // empty when the response wasn't a usable page
+}
+
+async function fetchHtml(url: string): Promise<FetchedPage> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
@@ -46,8 +80,11 @@ async function fetchHtml(url: string): Promise<string> {
       redirect: 'follow',
     });
 
+    // Only 404/410 are trusted as "gone"; 403/429/5xx mean we were blocked or
+    // the site had a bad moment, which says nothing about the listing.
     if (!res.ok || !res.body) {
-      throw new Error(`Fetch failed: ${res.status}`);
+      res.body?.cancel().catch(() => {});
+      return { status: res.status, html: '' };
     }
 
     const reader = res.body.getReader();
@@ -62,10 +99,65 @@ async function fetchHtml(url: string): Promise<string> {
       result += decoder.decode(value, { stream: true });
     }
     reader.cancel().catch(() => {});
-    return result;
+    return { status: res.status, html: result };
   } finally {
     clearTimeout(timeout);
   }
+}
+
+// ---------- Availability ----------
+
+const OUT_OF_STOCK = /(OutOfStock|SoldOut|Discontinued)$/i;
+const IN_STOCK = /(InStock|LimitedAvailability|OnlineOnly|InStoreOnly|PreOrder|PreSale|BackOrder)$/i;
+
+function collectJsonLdAvailability(node: unknown, out: string[], depth = 0): void {
+  if (!node || typeof node !== 'object' || depth > 8) return;
+  if (Array.isArray(node)) {
+    node.forEach((n) => collectJsonLdAvailability(n, out, depth + 1));
+    return;
+  }
+  const obj = node as Record<string, unknown>;
+  if (typeof obj.availability === 'string') out.push(obj.availability);
+  for (const key of ['offers', 'hasVariant', '@graph']) {
+    if (obj[key]) collectJsonLdAvailability(obj[key], out, depth + 1);
+  }
+}
+
+function extractAvailability(html: string): Availability {
+  const values: string[] = [];
+
+  const scripts = html.matchAll(
+    /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+  );
+  for (const m of scripts) {
+    try {
+      collectJsonLdAvailability(JSON.parse(m[1].trim()), values);
+    } catch {
+      continue;
+    }
+  }
+
+  for (const [attr, key] of [
+    ['property', 'product:availability'],
+    ['property', 'og:availability'],
+    ['itemprop', 'availability'],
+  ] as const) {
+    const v = metaContent(html, attr, key);
+    if (v) values.push(v);
+  }
+
+  if (values.length > 0) {
+    // Variants: in stock if ANY offer is; sold out only if every offer says so.
+    if (values.some((v) => IN_STOCK.test(v.trim()) || /^in\s?stock$/i.test(v.trim()))) return 'available';
+    if (values.every((v) => OUT_OF_STOCK.test(v.trim()) || /^(out\s?of\s?stock|oos)$/i.test(v.trim()))) {
+      return 'sold_out';
+    }
+  }
+
+  // eBay keeps the page up after a listing ends, with this exact banner.
+  if (/<span[^>]*>\s*This listing has ended\s*<\/span>/i.test(html)) return 'gone';
+
+  return 'unknown';
 }
 
 interface FoundPrice {
